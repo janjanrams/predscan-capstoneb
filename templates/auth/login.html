@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Log In - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    
+    <!-- Left Side - Image Section -->
+    <div class="image-section">
+        <div class="image-overlay">
+            <h2>Welcome to Predscan</h2>
+            <p>Advanced journal authenticity analysis powered by machine learning. Detect predatory publications with precision and confidence.</p>
+        </div>
+    </div>
+    
+    <!-- Right Side - Form Section -->
+    <div class="form-section">
+        <div class="form-container">
+            <div class="logo">
+                <div class="logo-text">Predscan</div>
+                <div class="logo-subtitle">Journal Analysis Platform</div>
+            </div>
+            
+            <div class="form-header">
+                <h1 class="form-title">Log In</h1>
+                <p class="form-subtitle">Sign in to access your dashboard and continue your research analysis</p>
+            </div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="message message-{{ 'error' if category == 'error' else 'success' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form class="form" id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="Enter your email address"
+                        required
+                        value="{{ request.form.get('email', '') }}"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Sign In to Dashboard</button>
+            </form>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{ url_for('auth.forgot_password') }}" class="btn-link">Forgot your password?</a>
+            </div>
+            
+            <div class="divider">
+                <span>New to Predscan?</span>
+            </div>
+            
+            <p class="link-text">
+                Don't have an account yet? 
+                <a href="{{ url_for('auth.signup') }}">Create your account</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enhanced form validation and UX
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        // Real-time validation
+        emailInput.addEventListener('blur', validateEmail);
+        passwordInput.addEventListener('blur', validatePassword);
+        
+        // Form submission
+        form.addEventListener('submit', handleSubmit);
+        
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            const emailGroup = emailInput.closest('.form-group');
+            
+            if (!email) {
+                setFieldState(emailGroup, 'error', 'Email is required');
+            } else if (!isValidEmail(email)) {
+                setFieldState(emailGroup, 'error', 'Please enter a valid email address');
+            } else {
+                setFieldState(emailGroup, 'success');
+            }
+        }
+        
+        function validatePassword() {
+            const password = passwordInput.value;
+            const passwordGroup = passwordInput.closest('.form-group');
+            
+            if (!password) {
+                setFieldState(passwordGroup, 'error', 'Password is required');
+            } else {
+                setFieldState(passwordGroup, 'success');
+            }
+        }
+        
+        function handleSubmit(e) {
+            // Clear previous messages
+            clearMessages();
+            
+            // Validate all fields
+            validateEmail();
+            validatePassword();
+            
+            // Check if form is valid
+            const hasErrors = document.querySelector('.form-group.has-error');
+            if (hasErrors) {
+                e.preventDefault();
+                showMessage('Please correct the errors above', 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.textContent = 'Signing In...';
+            submitBtn.disabled = true;
+        }
+        
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        function setFieldState(group, state, message = '') {
+            // Clear previous states
+            group.classList.remove('has-error', 'has-success');
+            
+            // Remove existing help text
+            const existingHelp = group.querySelector('.form-help-text');
+            if (existingHelp) existingHelp.remove();
+            
+            if (state !== 'neutral') {
+                group.classList.add(`has-${state}`);
+                
+                if (message) {
+                    const helpText = document.createElement('div');
+                    helpText.className = `form-help-text ${state}`;
+                    helpText.textContent = message;
+                    group.appendChild(helpText);
+                }
+            }
+        }
+        
+        function showMessage(text, type) {
+            clearMessages();
+            
+            const message = document.createElement('div');
+            message.className = `message message-${type}`;
+            message.textContent = text;
+            
+            const form = document.querySelector('.form');
+            form.parentNode.insertBefore(message, form);
+            
+            if (type === 'error') {
+                setTimeout(() => message.remove(), 5000);
+            }
+        }
+        
+        function clearMessages() {
+            document.querySelectorAll('.message:not([class*="flash"])').forEach(msg => msg.remove());
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,597 @@
+/* =============================================================================
+   ANALYSIS RESULTS LAYOUT SYSTEM
+   Modern card-based layout for analysis results with responsive design
+   Compatible with existing PredscanAI design system
+   ============================================================================= */
+
+/* =============================================================================
+   OVERALL RESULT SECTION
+   ============================================================================= */
+
+.analysis-overall-result {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-8);
+}
+
+.result-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-8);
+    width: 100%;
+    border: 2px solid var(--gray-200);
+    transition: all var(--transition-base);
+}
+
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.result-card-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+}
+
+.result-icon-column {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.result-text-column {
+    flex: 1;
+    text-align: left;
+}
+
+.result-icon {
+    font-size: var(--font-5xl);
+    display: block;
+}
+
+.result-title {
+    font-size: var(--font-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2);
+    margin-top: 0;
+}
+
+.result-title.success {
+    color: var(--success);
+}
+
+.result-title.error {
+    color: var(--error);
+}
+
+.result-subtitle {
+    color: var(--gray-600);
+    font-size: var(--font-base);
+    margin-bottom: var(--spacing-4);
+    margin-top: 0;
+}
+
+.result-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-full);
+    font-size: var(--font-sm);
+    font-weight: var(--font-weight-semibold);
+    border: 2px solid;
+}
+
+.result-badge.high-risk {
+    background: var(--white);
+    color: var(--error);
+    border-color: var(--error);
+}
+
+.result-badge.low-risk {
+    background: var(--white);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+/* =============================================================================
+   ANALYSIS ROW LAYOUTS
+   ============================================================================= */
+
+.analysis-row {
+    margin-bottom: var(--spacing-8);
+}
+
+/* First Row - 3 Cards Grid */
+.analysis-row-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+}
+
+/* Second Row - Model Info Note */
+.analysis-row-note {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.model-info-card {
+    background: linear-gradient(135deg, var(--navy-50) 0%, var(--gray-50) 100%);
+    border: 2px solid var(--navy-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    max-width: 600px;
+    box-shadow: var(--shadow-base);
+    transition: all var(--transition-base);
+}
+
+.model-info-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.info-icon {
+    font-size: var(--font-3xl);
+    flex-shrink: 0;
+}
+
+.info-text {
+    color: var(--primary-navy);
+    font-size: var(--font-lg);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Third Row - 2 Columns with Cards */
+.analysis-row-two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-8);
+}
+
+.analysis-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+}
+
+/* Detailed Analysis Row */
+.analysis-row-detailed {
+    margin-top: var(--spacing-8);
+}
+
+/* =============================================================================
+   ANALYSIS CARDS
+   ============================================================================= */
+
+.analysis-card,
+.detailed-analysis-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    transition: all var(--transition-base);
+    height: 100%;
+}
+
+.analysis-card:hover,
+.detailed-analysis-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-orange);
+}
+
+/* Card Headers */
+.analysis-card .card-header,
+.detailed-analysis-card .card-header {
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--navy-50) 100%);
+    padding: var(--spacing-4) var(--spacing-6);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.analysis-card .card-title,
+.detailed-analysis-card .card-title {
+    color: var(--primary-navy);
+    font-size: var(--font-lg);
+    font-weight: var(--font-weight-bold);
+    margin: 0;
+}
+
+.card-icon {
+    font-size: var(--font-xl);
+    opacity: 0.7;
+    transition: opacity var(--transition-base);
+}
+
+.analysis-card:hover .card-icon,
+.detailed-analysis-card:hover .card-icon {
+    opacity: 1;
+}
+
+/* Card Bodies - Enhanced Flexbox Centering */
+.analysis-card .card-body,
+.detailed-analysis-card .card-body {
+    padding: var(--spacing-6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+    min-height: 120px; /* Ensure consistent minimum height for proper centering */
+    gap: var(--spacing-2); /* Consistent spacing between elements */
+}
+
+/* =============================================================================
+   METRIC DISPLAY COMPONENTS
+   ============================================================================= */
+
+.metric-value {
+    font-size: var(--font-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-navy);
+    margin: 0; /* Remove default margins for flexbox control */
+    line-height: var(--line-height-tight);
+    order: 1; /* Ensure proper visual order */
+}
+
+.metric-label {
+    font-size: var(--font-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--gray-700);
+    margin: 0; /* Remove default margins for flexbox control */
+    order: 2; /* Position after metric value */
+}
+
+.metric-description {
+    font-size: var(--font-sm);
+    color: var(--gray-500);
+    line-height: var(--line-height-relaxed);
+    margin: 0; /* Remove default margins for flexbox control */
+    order: 3; /* Position last */
+}
+
+.metric-raw {
+    font-size: var(--font-sm);
+    color: var(--gray-400);
+    font-family: 'Courier New', monospace;
+    margin-top: var(--spacing-2);
+    padding: var(--spacing-1) var(--spacing-2);
+    background: var(--gray-100);
+    border-radius: var(--radius-base);
+    display: inline-block;
+}
+
+/* =============================================================================
+   DETAILED ANALYSIS CONTENT
+   ============================================================================= */
+
+.analysis-remark {
+    font-size: var(--font-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-navy);
+    margin-bottom: var(--spacing-4);
+    line-height: var(--line-height-relaxed);
+}
+
+.analysis-description {
+    font-size: var(--font-base);
+    color: var(--gray-700);
+    line-height: var(--line-height-relaxed);
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+/* Tablet Portrait and Below (992px) */
+@media (max-width: 992px) {
+    .analysis-row-three {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .analysis-row-two-columns {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-6);
+    }
+
+    .result-card {
+        padding: var(--spacing-6);
+    }
+    
+    .result-card-content {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-4);
+    }
+    
+    .result-text-column {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: var(--font-2xl);
+    }
+
+    .model-info-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-3);
+    }
+
+    .info-text {
+        font-size: var(--font-base);
+    }
+}
+
+/* Mobile Landscape (768px) */
+@media (max-width: 768px) {
+    .analysis-row {
+        margin-bottom: var(--spacing-6);
+    }
+
+    .analysis-card .card-header,
+    .detailed-analysis-card .card-header {
+        padding: var(--spacing-3) var(--spacing-4);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .analysis-card .card-body,
+    .detailed-analysis-card .card-body {
+        padding: var(--spacing-4);
+        min-height: 100px; /* Adjust minimum height for mobile */
+        justify-content: center; /* Maintain center alignment on mobile */
+    }
+
+    .result-card {
+        padding: var(--spacing-5);
+        margin: 0 var(--spacing-3);
+    }
+
+    .result-icon {
+        font-size: var(--font-4xl);
+    }
+
+    .result-title {
+        font-size: var(--font-xl);
+    }
+
+    .metric-value {
+        font-size: var(--font-xl);
+    }
+
+    .analysis-card .card-title,
+    .detailed-analysis-card .card-title {
+        font-size: var(--font-base);
+    }
+
+    .model-info-card {
+        margin: 0 var(--spacing-3);
+        padding: var(--spacing-4);
+    }
+
+    .info-icon {
+        font-size: var(--font-2xl);
+    }
+
+    .analysis-column {
+        gap: var(--spacing-4);
+    }
+}
+
+/* Mobile Portrait (480px) */
+@media (max-width: 480px) {
+    .analysis-row-three {
+        gap: var(--spacing-3);
+    }
+
+    .analysis-row-two-columns {
+        gap: var(--spacing-4);
+    }
+
+    .result-card {
+        padding: var(--spacing-4);
+        margin: 0 var(--spacing-2);
+    }
+
+    .result-icon {
+        font-size: var(--font-3xl);
+    }
+
+    .result-title {
+        font-size: var(--font-lg);
+    }
+
+    .metric-value {
+        font-size: var(--font-lg);
+    }
+
+    .analysis-card .card-header,
+    .detailed-analysis-card .card-header {
+        padding: var(--spacing-3);
+    }
+
+    .analysis-card .card-body,
+    .detailed-analysis-card .card-body {
+        padding: var(--spacing-3);
+        min-height: 80px; /* Smaller minimum height for small screens */
+        justify-content: center; /* Maintain center alignment */
+        align-items: center; /* Center align on very small screens for better appearance */
+        text-align: center; /* Center text on small screens */
+    }
+
+    .model-info-card {
+        margin: 0 var(--spacing-2);
+        padding: var(--spacing-3);
+    }
+
+    .info-text {
+        font-size: var(--font-sm);
+    }
+
+    .analysis-remark {
+        font-size: var(--font-base);
+    }
+
+    .analysis-description {
+        font-size: var(--font-sm);
+    }
+}
+
+/* =============================================================================
+   ANIMATION ENHANCEMENTS
+   ============================================================================= */
+
+/* Fade-in animation for dynamically loaded content */
+.analysis-results-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.analysis-results-section.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered animation for cards */
+.analysis-card,
+.detailed-analysis-card {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cardFadeIn 0.5s ease-out forwards;
+}
+
+.analysis-card:nth-child(1) { animation-delay: 0.1s; }
+.analysis-card:nth-child(2) { animation-delay: 0.2s; }
+.analysis-card:nth-child(3) { animation-delay: 0.3s; }
+.analysis-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================================================= */
+
+/* Focus styles for keyboard navigation */
+.analysis-card:focus,
+.detailed-analysis-card:focus,
+.result-card:focus {
+    outline: 2px solid var(--primary-orange);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .analysis-card,
+    .detailed-analysis-card,
+    .result-card {
+        border-width: 2px;
+        border-color: var(--gray-800);
+    }
+    
+    .metric-value {
+        color: var(--gray-900);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .analysis-card,
+    .detailed-analysis-card,
+    .result-card,
+    .model-info-card {
+        transition: none;
+        animation: none;
+    }
+    
+    .analysis-card:hover,
+    .detailed-analysis-card:hover,
+    .result-card:hover {
+        transform: none;
+    }
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+/* Layout utilities */
+.analysis-grid-1 { grid-template-columns: 1fr; }
+.analysis-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.analysis-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.analysis-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Spacing utilities specific to analysis layout */
+.analysis-spacing-sm { gap: var(--spacing-4); }
+.analysis-spacing-md { gap: var(--spacing-6); }
+.analysis-spacing-lg { gap: var(--spacing-8); }
+
+/* Card size variants */
+.analysis-card-compact .card-body {
+    padding: var(--spacing-4);
+    min-height: 80px;
+}
+
+.analysis-card-expanded .card-body {
+    padding: var(--spacing-8);
+    min-height: 160px;
+}
+
+/* Card alignment variants for enhanced centering control */
+.analysis-card-center .card-body {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.analysis-card-left .card-body {
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.analysis-card-top .card-body {
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.analysis-card-stretch .card-body {
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+/* Metric variants */
+.metric-large .metric-value {
+    font-size: var(--font-4xl);
+}
+
+.metric-small .metric-value {
+    font-size: var(--font-xl);
+}
+
+/* Color variants for different metric types */
+.metric-success .metric-value { color: var(--success); }
+.metric-warning .metric-value { color: var(--warning); }
+.metric-error .metric-value { color: var(--error); }
+.metric-info .metric-value { color: var(--info); }

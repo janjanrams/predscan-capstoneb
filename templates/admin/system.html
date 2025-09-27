@@ -1,0 +1,947 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - Admin - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* System settings specific styles */
+.system-header {
+    margin-bottom: 2rem;
+}
+
+.system-header h1 {
+    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.system-header p {
+    color: #6b7280;
+    margin: 0;
+}
+
+.settings-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-icon {
+    font-size: 1.25rem;
+}
+
+.setting-group {
+    margin-bottom: 1.5rem;
+}
+
+.setting-group:last-child {
+    margin-bottom: 0;
+}
+
+.setting-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.setting-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.setting-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.setting-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+}
+
+.setting-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.toggle-info {
+    flex: 1;
+}
+
+.toggle-title {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.toggle-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #053460;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-indicator.online {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-indicator.offline {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.status-indicator.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.system-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.metric-card {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.metric-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.danger-zone {
+    border: 2px dashed #dc2626;
+    background: #fef2f2;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.danger-title {
+    color: #dc2626;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.danger-description {
+    color: #7f1d1d;
+    margin-bottom: 1rem;
+}
+
+.danger-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.backup-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f0f9ff;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.backup-info {
+    flex: 1;
+}
+
+.backup-title {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.backup-time {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.log-viewer {
+    background: #1f2937;
+    color: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    height: 200px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .action-buttons,
+    .danger-actions {
+        flex-direction: column;
+    }
+    
+    .system-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .setting-toggle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('admin.index') }}" class="logo">Predscan Admin</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">
+                        <span class="nav-icon">⚡</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analyses') }}" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Analysis Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{{ url_for('admin.system') }}" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">System Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.logs') }}" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Activity Logs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                    <div class="admin-badge">Admin</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="system-header">
+                <h1>System Settings</h1>
+                <p>Configure system parameters, monitoring, and maintenance settings</p>
+            </div>
+            
+            <!-- Settings Grid -->
+            <div class="settings-grid">
+                <!-- System Status Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">⚡</span>
+                            System Status
+                        </h3>
+                        <div class="status-indicator online">
+                            <span style="width: 8px; height: 8px; background: currentColor; border-radius: 50%; display: block;"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="system-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ system_metrics.cpu_usage or '45' }}%</div>
+                            <div class="metric-label">CPU Usage</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ system_metrics.memory_usage or '62' }}%</div>
+                            <div class="metric-label">Memory Usage</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ system_metrics.disk_usage or '34' }}%</div>
+                            <div class="metric-label">Disk Usage</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ system_metrics.uptime or '99.9' }}%</div>
+                            <div class="metric-label">Uptime</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn" onclick="refreshSystemStatus()">Refresh Status</button>
+                        <button class="admin-btn secondary" onclick="restartService()">Restart Service</button>
+                        <button class="admin-btn secondary" onclick="viewSystemLogs()">View Logs</button>
+                    </div>
+                </div>
+                
+                <!-- Analysis Configuration Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">🔍</span>
+                            Analysis Configuration
+                        </h3>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Model Confidence Threshold</label>
+                        <div class="setting-description">Minimum confidence score required for analysis results</div>
+                        <input type="range" class="setting-input" min="0.5" max="1.0" step="0.05" 
+                               value="{{ settings.confidence_threshold or 0.8 }}" id="confidenceThreshold">
+                        <div style="text-align: center; margin-top: 0.5rem; font-weight: 500;">
+                            <span id="confidenceValue">{{ (settings.confidence_threshold or 0.8) * 100 }}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Maximum File Size (MB)</label>
+                        <div class="setting-description">Maximum allowed PDF file size for analysis</div>
+                        <input type="number" class="setting-input" min="1" max="100" 
+                               value="{{ settings.max_file_size or 25 }}" id="maxFileSize">
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Auto-Archive Results</div>
+                            <div class="toggle-description">Automatically archive analysis results after 90 days</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" {{ 'checked' if settings.auto_archive else '' }} id="autoArchive">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn" onclick="saveAnalysisSettings()">Save Configuration</button>
+                        <button class="admin-btn secondary" onclick="resetToDefaults()">Reset to Defaults</button>
+                    </div>
+                </div>
+                
+                <!-- Database Management Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">💾</span>
+                            Database Management
+                        </h3>
+                    </div>
+                    
+                    <div class="backup-status">
+                        <div class="backup-info">
+                            <div class="backup-title">Last Backup</div>
+                            <div class="backup-time">{{ last_backup or 'Never' }}</div>
+                        </div>
+                        <div class="status-indicator online">Healthy</div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Backup Schedule</label>
+                        <div class="setting-description">Frequency of automatic database backups</div>
+                        <select class="setting-select" id="backupSchedule">
+                            <option value="daily" {{ 'selected' if settings.backup_schedule == 'daily' else '' }}>Daily</option>
+                            <option value="weekly" {{ 'selected' if settings.backup_schedule == 'weekly' else '' }}>Weekly</option>
+                            <option value="monthly" {{ 'selected' if settings.backup_schedule == 'monthly' else '' }}>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Retention Period (Days)</label>
+                        <div class="setting-description">How long to keep backup files</div>
+                        <input type="number" class="setting-input" min="7" max="365" 
+                               value="{{ settings.backup_retention or 30 }}" id="backupRetention">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn" onclick="createBackup()">Create Backup Now</button>
+                        <button class="admin-btn secondary" onclick="optimizeDatabase()">Optimize Database</button>
+                        <button class="admin-btn secondary" onclick="viewBackupHistory()">View Backup History</button>
+                    </div>
+                </div>
+                
+                <!-- Security Settings Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">🔒</span>
+                            Security Settings
+                        </h3>
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Two-Factor Authentication</div>
+                            <div class="toggle-description">Require 2FA for admin accounts</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" {{ 'checked' if settings.require_2fa else '' }} id="require2FA">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Session Monitoring</div>
+                            <div class="toggle-description">Log all user sessions and activities</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" {{ 'checked' if settings.session_monitoring else '' }} id="sessionMonitoring">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Session Timeout (Minutes)</label>
+                        <div class="setting-description">Automatic logout after inactivity</div>
+                        <input type="number" class="setting-input" min="5" max="480" 
+                               value="{{ settings.session_timeout or 60 }}" id="sessionTimeout">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn" onclick="saveSecuritySettings()">Save Security Settings</button>
+                        <button class="admin-btn secondary" onclick="viewSecurityLogs()">View Security Logs</button>
+                    </div>
+                </div>
+                
+                <!-- API Configuration Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">🔌</span>
+                            API Configuration
+                        </h3>
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <div class="toggle-info">
+                            <div class="toggle-title">API Access</div>
+                            <div class="toggle-description">Enable external API access</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" {{ 'checked' if settings.api_enabled else '' }} id="apiEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Rate Limit (Requests/Hour)</label>
+                        <div class="setting-description">Maximum API requests per user per hour</div>
+                        <input type="number" class="setting-input" min="10" max="1000" 
+                               value="{{ settings.api_rate_limit or 100 }}" id="apiRateLimit">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">API Key Expiry (Days)</label>
+                        <div class="setting-description">How long API keys remain valid</div>
+                        <input type="number" class="setting-input" min="1" max="365" 
+                               value="{{ settings.api_key_expiry or 90 }}" id="apiKeyExpiry">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn" onclick="saveApiSettings()">Save API Settings</button>
+                        <button class="admin-btn secondary" onclick="regenerateApiKeys()">Regenerate All Keys</button>
+                    </div>
+                </div>
+                
+                <!-- System Logs Card -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">📋</span>
+                            System Logs
+                        </h3>
+                        <button class="admin-btn secondary" onclick="refreshLogs()">Refresh</button>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Log Level</label>
+                        <div class="setting-description">Minimum level for system logging</div>
+                        <select class="setting-select" id="logLevel">
+                            <option value="DEBUG" {{ 'selected' if settings.log_level == 'DEBUG' else '' }}>Debug</option>
+                            <option value="INFO" {{ 'selected' if settings.log_level == 'INFO' else '' }}>Info</option>
+                            <option value="WARNING" {{ 'selected' if settings.log_level == 'WARNING' else '' }}>Warning</option>
+                            <option value="ERROR" {{ 'selected' if settings.log_level == 'ERROR' else '' }}>Error</option>
+                        </select>
+                    </div>
+                    
+                    <div class="log-viewer" id="systemLogs">
+                        Loading system logs...
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="admin-btn secondary" onclick="downloadLogs()">Download Logs</button>
+                        <button class="admin-btn secondary" onclick="clearLogs()">Clear Logs</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <h3 class="danger-title">
+                    <span>⚠️</span>
+                    Danger Zone
+                </h3>
+                <p class="danger-description">
+                    These actions are irreversible and may cause system downtime or data loss. 
+                    Please proceed with extreme caution.
+                </p>
+                <div class="danger-actions">
+                    <button class="admin-btn danger" onclick="resetSystem()">Reset System Settings</button>
+                    <button class="admin-btn danger" onclick="clearAllData()">Clear All Analysis Data</button>
+                    <button class="admin-btn danger" onclick="factoryReset()">Factory Reset</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// System settings JavaScript functions
+
+// Update confidence threshold display
+document.getElementById('confidenceThreshold').addEventListener('input', function() {
+    const value = Math.round(this.value * 100);
+    document.getElementById('confidenceValue').textContent = value + '%';
+});
+
+function refreshSystemStatus() {
+    fetch('/admin/system/status', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update system metrics
+        document.querySelector('.metric-value').textContent = data.cpu_usage + '%';
+        showMessage('System status refreshed', 'success');
+    })
+    .catch(error => {
+        showMessage('Failed to refresh system status', 'error');
+    });
+}
+
+function saveAnalysisSettings() {
+    const settings = {
+        confidence_threshold: document.getElementById('confidenceThreshold').value,
+        max_file_size: document.getElementById('maxFileSize').value,
+        auto_archive: document.getElementById('autoArchive').checked
+    };
+    
+    fetch('/admin/system/analysis-settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Analysis settings saved successfully', 'success');
+        } else {
+            showMessage('Failed to save settings', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving settings', 'error');
+    });
+}
+
+function saveSecuritySettings() {
+    const settings = {
+        require_2fa: document.getElementById('require2FA').checked,
+        session_monitoring: document.getElementById('sessionMonitoring').checked,
+        session_timeout: document.getElementById('sessionTimeout').value
+    };
+    
+    fetch('/admin/system/security-settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Security settings saved successfully', 'success');
+        } else {
+            showMessage('Failed to save security settings', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving security settings', 'error');
+    });
+}
+
+function saveApiSettings() {
+    const settings = {
+        api_enabled: document.getElementById('apiEnabled').checked,
+        api_rate_limit: document.getElementById('apiRateLimit').value,
+        api_key_expiry: document.getElementById('apiKeyExpiry').value
+    };
+    
+    fetch('/admin/system/api-settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('API settings saved successfully', 'success');
+        } else {
+            showMessage('Failed to save API settings', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error saving API settings', 'error');
+    });
+}
+
+function createBackup() {
+    if (confirm('Create a backup now? This may take a few minutes.')) {
+        fetch('/admin/system/backup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('Backup created successfully', 'success');
+            } else {
+                showMessage('Failed to create backup', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error creating backup', 'error');
+        });
+    }
+}
+
+function optimizeDatabase() {
+    if (confirm('Optimize the database? This may take several minutes and temporarily affect performance.')) {
+        fetch('/admin/system/optimize-db', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('Database optimized successfully', 'success');
+            } else {
+                showMessage('Failed to optimize database', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error optimizing database', 'error');
+        });
+    }
+}
+
+function restartService() {
+    if (confirm('Restart the system service? This will cause a brief downtime.')) {
+        fetch('/admin/system/restart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage('Service restart initiated', 'success');
+            // Refresh page after delay
+            setTimeout(() => location.reload(), 5000);
+        })
+        .catch(error => {
+            showMessage('Error restarting service', 'error');
+        });
+    }
+}
+
+function refreshLogs() {
+    fetch('/admin/system/logs', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('systemLogs').innerHTML = data.logs || 'No logs available';
+    })
+    .catch(error => {
+        document.getElementById('systemLogs').innerHTML = 'Error loading logs';
+    });
+}
+
+function downloadLogs() {
+    window.location.href = '/admin/system/logs/download';
+}
+
+function resetSystem() {
+    if (confirm('Reset all system settings to default values? This cannot be undone.')) {
+        if (confirm('Are you absolutely sure? This will reset ALL system configuration.')) {
+            fetch('/admin/system/reset-settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('System settings reset successfully', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage('Failed to reset system settings', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Error resetting system settings', 'error');
+            });
+        }
+    }
+}
+
+function clearAllData() {
+    if (confirm('Delete ALL analysis data? This will permanently remove all analyses and cannot be undone.')) {
+        if (confirm('FINAL WARNING: This will delete ALL user data and analyses permanently!')) {
+            const confirmText = prompt('Type "DELETE ALL DATA" to confirm:');
+            if (confirmText === 'DELETE ALL DATA') {
+                fetch('/admin/system/clear-data', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('All data cleared successfully', 'success');
+                    } else {
+                        showMessage('Failed to clear data', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Error clearing data', 'error');
+                });
+            }
+        }
+    }
+}
+
+function factoryReset() {
+    if (confirm('Perform a complete factory reset? This will restore the system to its original state.')) {
+        if (confirm('FINAL WARNING: This will delete ALL data and reset ALL settings!')) {
+            const confirmText = prompt('Type "FACTORY RESET" to confirm:');
+            if (confirmText === 'FACTORY RESET') {
+                fetch('/admin/system/factory-reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Factory reset initiated', 'success');
+                        setTimeout(() => window.location.href = '/auth/login', 5000);
+                    } else {
+                        showMessage('Failed to perform factory reset', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Error performing factory reset', 'error');
+                });
+            }
+        }
+    }
+}
+
+function showMessage(text, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.admin-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create and show new message
+    const message = document.createElement('div');
+    message.className = `admin-message message ${type}`;
+    message.textContent = text;
+    
+    const contentWrapper = document.querySelector('.content-wrapper');
+    contentWrapper.insertBefore(message, contentWrapper.firstChild);
+    
+    // Auto-remove message after 5 seconds
+    setTimeout(() => {
+        if (message.parentNode) {
+            message.remove();
+        }
+    }, 5000);
+}
+
+// Auto-refresh system logs every 30 seconds
+setInterval(refreshLogs, 30000);
+
+// Load initial logs
+document.addEventListener('DOMContentLoaded', refreshLogs);
+</script>
+{% endblock %}

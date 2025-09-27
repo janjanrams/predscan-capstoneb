@@ -1,0 +1,297 @@
+/* =============================================================================
+   PREDICTION PROBABILITIES LAYOUT SYSTEM
+   Perfect 3-column layout with equal distribution and centering
+   ============================================================================= */
+
+/* Main Prediction Probabilities Container */
+.prediction-probabilities-container {
+    /* CSS Grid for perfect 3-column distribution */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+    width: 100%;
+    align-items: stretch;
+    justify-items: stretch;
+    
+    /* Background and styling to match existing design */
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--navy-50) 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--gray-200);
+}
+
+/* Individual Metric Columns */
+.probability-metric-column {
+    /* Flexbox for perfect vertical and horizontal centering */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    /* Ensure consistent height and spacing */
+    min-height: 120px;
+    padding: var(--spacing-4);
+    
+    /* Subtle column separation */
+    position: relative;
+}
+
+/* Column separators for visual clarity */
+.probability-metric-column:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: calc(-1 * var(--spacing-3));
+    top: 10%;
+    bottom: 10%;
+    width: 1px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--gray-300),
+        transparent
+    );
+}
+
+/* Metric Values - Enhanced Typography */
+.probability-metric-value {
+    font-size: var(--font-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-2);
+    
+    /* Smooth transitions for dynamic updates */
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+/* Color variants for different metrics */
+.probability-metric-value.legitimate {
+    color: var(--success);
+}
+
+.probability-metric-value.predatory {
+    color: var(--error);
+}
+
+.probability-metric-value.confidence {
+    color: var(--primary-navy);
+}
+
+/* Metric Labels */
+.probability-metric-label {
+    font-size: var(--font-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--gray-700);
+    margin-bottom: 0;
+    
+    /* Ensure labels don't break layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Hover effects for interactive feel */
+.probability-metric-column:hover .probability-metric-value {
+    transform: scale(1.05);
+}
+
+.probability-metric-column:hover .probability-metric-label {
+    color: var(--primary-navy);
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+/* Tablet Portrait and Below (992px) */
+@media (max-width: 992px) {
+    .prediction-probabilities-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+        padding: var(--spacing-5);
+    }
+    
+    .probability-metric-column {
+        min-height: 80px;
+        padding: var(--spacing-3);
+        
+        /* Horizontal layout for mobile */
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .probability-metric-column:last-child {
+        border-bottom: none;
+    }
+    
+    /* Remove vertical separators on mobile */
+    .probability-metric-column::after {
+        display: none;
+    }
+    
+    .probability-metric-value {
+        font-size: var(--font-xl);
+        margin-bottom: 0;
+        order: 2;
+    }
+    
+    .probability-metric-label {
+        margin-bottom: 0;
+        order: 1;
+        white-space: normal;
+    }
+}
+
+/* Mobile Landscape (768px) */
+@media (max-width: 768px) {
+    .prediction-probabilities-container {
+        padding: var(--spacing-4);
+        gap: var(--spacing-3);
+    }
+    
+    .probability-metric-column {
+        min-height: 60px;
+        padding: var(--spacing-3) var(--spacing-2);
+    }
+    
+    .probability-metric-value {
+        font-size: var(--font-lg);
+    }
+    
+    .probability-metric-label {
+        font-size: var(--font-sm);
+    }
+}
+
+/* Mobile Portrait (480px) */
+@media (max-width: 480px) {
+    .prediction-probabilities-container {
+        padding: var(--spacing-3);
+        gap: var(--spacing-2);
+    }
+    
+    .probability-metric-column {
+        min-height: 50px;
+        padding: var(--spacing-2);
+        
+        /* Stack vertically on very small screens if needed */
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .probability-metric-value {
+        font-size: var(--font-base);
+        margin-bottom: var(--spacing-1);
+        order: 1;
+    }
+    
+    .probability-metric-label {
+        font-size: var(--font-xs);
+        order: 2;
+    }
+}
+
+/* =============================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================================================= */
+
+/* Focus styles for keyboard navigation */
+.probability-metric-column:focus {
+    outline: 2px solid var(--primary-orange);
+    outline-offset: 2px;
+    border-radius: var(--radius-base);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .prediction-probabilities-container {
+        border-width: 2px;
+        border-color: var(--gray-800);
+    }
+    
+    .probability-metric-column::after {
+        background: var(--gray-800);
+    }
+    
+    .probability-metric-value {
+        font-weight: var(--font-weight-bold);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .probability-metric-value,
+    .probability-metric-column {
+        transition: none;
+    }
+    
+    .probability-metric-column:hover .probability-metric-value {
+        transform: none;
+    }
+}
+
+/* =============================================================================
+   ANIMATION ENHANCEMENTS
+   ============================================================================= */
+
+/* Staggered entrance animation */
+.probability-metric-column {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: probabilityFadeIn 0.5s ease-out forwards;
+}
+
+.probability-metric-column:nth-child(1) { animation-delay: 0.1s; }
+.probability-metric-column:nth-child(2) { animation-delay: 0.2s; }
+.probability-metric-column:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes probabilityFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+/* Alternative compact layout */
+.prediction-probabilities-container.compact {
+    padding: var(--spacing-4);
+    gap: var(--spacing-4);
+}
+
+.prediction-probabilities-container.compact .probability-metric-column {
+    min-height: 80px;
+    padding: var(--spacing-3);
+}
+
+.prediction-probabilities-container.compact .probability-metric-value {
+    font-size: var(--font-xl);
+}
+
+/* Alternative expanded layout */
+.prediction-probabilities-container.expanded {
+    padding: var(--spacing-8);
+    gap: var(--spacing-8);
+}
+
+.prediction-probabilities-container.expanded .probability-metric-column {
+    min-height: 160px;
+    padding: var(--spacing-6);
+}
+
+.prediction-probabilities-container.expanded .probability-metric-value {
+    font-size: var(--font-3xl);
+}

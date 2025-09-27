@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard.index') }}" class="logo">Predscan</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard.analyzer') }}" class="nav-link">
+                        <span class="nav-icon">🔍</span>
+                        <span class="nav-text">Analysis</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="page-header">
+                <h1>Welcome, {{ user.full_name.split()[0] }}!</h1>
+                <p class="page-subtitle">Advanced journal authenticity analysis powered by AI</p>
+            </div>
+            
+            <!-- Analysis Navigation Button -->
+            <div class="action-section">
+                <button class="analysis-btn" onclick="navigateToAnalysis()">
+                    <span class="btn-icon">🔍</span>
+                    Start New Analysis
+                </button>
+            </div>
+            
+            <!-- Analysis History -->
+            <section class="analysis-history">
+                <h2>Recent Analyses</h2>
+                <div class="analysis-list">
+                    {% if analyses %}
+                        <div class="analysis-items-wrapper">
+                            {% for analysis in analyses %}
+                            <div class="analysis-item clickable" data-analysis-id="{{ analysis.id }}" onclick="viewAnalysis({{ analysis.id }})">
+                                <button class="delete-btn" onclick="deleteAnalysis(event, {{ analysis.id }})" title="Delete analysis">
+                                    <span class="delete-icon">×</span>
+                                </button>
+                                <div class="analysis-info">
+                                    <h3>{{ analysis.filename.rsplit('.', 1)[0] if '.' in analysis.filename else analysis.filename }}</h3>
+                                    <p class="analysis-date">Analyzed {{ analysis.format_timestamp() }}</p>
+                                    <span class="status-badge {% if analysis.get_risk_level() == 'high' %}status-predatory{% else %}status-safe{% endif %}">
+                                        {{ analysis.get_result_status() }}
+                                    </span>
+                                </div>
+                                <div class="analysis-score">
+                                    {% if analysis.probability_predatory and analysis.probability_legitimate %}
+                                        {% if analysis.probability_predatory > analysis.probability_legitimate %}
+                                            {{ "%.0f"|format(analysis.probability_predatory) }}%
+                                        {% else %}
+                                            {{ "%.0f"|format(analysis.probability_legitimate) }}%
+                                        {% endif %}
+                                    {% elif analysis.result == 1 %}
+                                        {% if analysis.probability_predatory %}
+                                            {{ "%.0f"|format(analysis.probability_predatory) }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    {% else %}
+                                        {% if analysis.probability_legitimate %}
+                                            {{ "%.0f"|format(analysis.probability_legitimate) }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-analyses">
+                            <p>No analyses performed yet. Start your first analysis to see results here.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<style>
+/* Analysis History Styles */
+
+/* Height Transition Container */
+.analysis-items-wrapper {
+    transition: height 0.6s ease, min-height 0.6s ease;
+    overflow: hidden;
+    will-change: height, min-height;
+}
+
+.analysis-items-wrapper.transitioning {
+    /* Enhanced transition state for container height changes */
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), min-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.analysis-item.clickable {
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 16px; /* Add spacing between analysis items */
+    transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.6s ease, height 0.6s ease, margin 0.6s ease, padding 0.6s ease;
+    will-change: opacity, transform, height; /* Optimize for animations */
+    overflow: hidden;
+}
+
+/* Remove margin from the last item to avoid extra space at bottom */
+.analysis-item.clickable:last-child {
+    margin-bottom: 0;
+}
+
+.analysis-item.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+    opacity: 0.8;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.delete-icon {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Enhanced Animation Classes */
+
+/* Height collapsing animation for analysis items */
+.analysis-item.collapsing {
+    opacity: 0;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-width: 0 !important;
+    transform: translateY(-10px) scale(0.95);
+    transition: 
+        opacity 0.3s ease,
+        transform 0.3s ease,
+        height 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+        min-height 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+        margin 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+        padding 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+        border-width 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+    pointer-events: none;
+}
+
+/* Fade-out animation classes - improved for coordinated timing */
+.analysis-item.fade-out {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.analysis-item.deleting {
+    opacity: 0.3;
+    transform: scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    position: relative;
+}
+
+/* Add loading spinner for slow networks */
+.analysis-item.deleting::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #f15f28;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Error/Success Messages */
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+</style>
+
+<script>
+function navigateToAnalysis() {
+    window.location.href = "{{ url_for('dashboard.analyzer') }}";
+}
+
+function viewAnalysis(analysisId) {
+    // Create a form dynamically with method="POST"
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/dashboard/analyzer';
+    
+    // Include the analysis_id as a hidden form field
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'analysis_id';
+    hiddenInput.value = analysisId;
+    
+    // Append the hidden input to the form
+    form.appendChild(hiddenInput);
+    
+    // Append the form to document body, submit it, then remove it
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function deleteAnalysis(event, analysisId) {
+    // Prevent event bubbling to avoid triggering the view action
+    event.stopPropagation();
+    
+    // Show loading state immediately (no confirmation)
+    const analysisItem = event.target.closest('.analysis-item');
+    
+    // Prevent multiple delete attempts
+    if (analysisItem.classList.contains('deleting') || analysisItem.classList.contains('fade-out')) {
+        return;
+    }
+    
+    const originalContent = analysisItem.innerHTML;
+    
+    // Apply deleting state with subtle animation
+    analysisItem.classList.add('deleting');
+    
+    // Send DELETE request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    fetch(`/dashboard/delete-analysis/${analysisId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        signal: controller.signal
+    })
+    .then(response => {
+        clearTimeout(timeoutId); // Clear timeout on successful response
+        
+        if (response.ok) {
+            // Additional validation: check if response is actually JSON with success status
+            return response.json().then(data => {
+                if (data.success !== false) {
+                    // Start smooth deletion animation sequence
+                    performSmoothDeletion(analysisItem);
+                    showMessage('Analysis deleted successfully.', 'success');
+                } else {
+                    throw new Error(data.message || 'Server reported failure');
+                }
+            }).catch(() => {
+                // If JSON parsing fails but response was ok, assume success
+                performSmoothDeletion(analysisItem);
+                showMessage('Analysis deleted successfully.', 'success');
+            });
+        } else {
+            // Try to get error message from response
+            return response.json().then(data => {
+                throw new Error(data.message || `Server error: ${response.status}`);
+            }).catch(() => {
+                throw new Error(`Server error: ${response.status}`);
+            });
+        }
+    })
+    .catch(error => {
+        clearTimeout(timeoutId); // Clear timeout on error
+        console.error('Error deleting analysis:', error);
+        
+        // Restore original state by removing classes and re-enabling interactions
+        analysisItem.classList.remove('deleting', 'fade-out');
+        analysisItem.style.pointerEvents = ''; // Re-enable pointer events
+        
+        // Provide specific error messages based on error type
+        if (error.name === 'AbortError') {
+            showMessage('Request timed out. Please check your connection and try again.', 'error');
+        } else if (error.name === 'NetworkError' || error.message.includes('Failed to fetch')) {
+            showMessage('Network error. Please check your connection and try again.', 'error');
+        } else {
+            showMessage('Failed to delete analysis. Please try again.', 'error');
+        }
+    });
+}
+
+function performSmoothDeletion(analysisItem) {
+    // Get the container wrapper for height transitions
+    const wrapper = document.querySelector('.analysis-items-wrapper');
+    
+    // Remove deleting state and start fade-out
+    analysisItem.classList.remove('deleting');
+    analysisItem.classList.add('fade-out');
+    
+    // Add transitioning state to wrapper for smooth height changes
+    if (wrapper) {
+        wrapper.classList.add('transitioning');
+    }
+    
+    // After fade-out completes, start height collapse
+    setTimeout(() => {
+        analysisItem.classList.add('collapsing');
+        
+        // Wait for height collapse to complete before removing from DOM
+        setTimeout(() => {
+            analysisItem.remove();
+            
+            // Check if this was the last analysis
+            const remainingAnalyses = document.querySelectorAll('.analysis-item').length;
+            if (remainingAnalyses === 0) {
+                const analysisList = document.querySelector('.analysis-list');
+                analysisList.innerHTML = `
+                    <div class="no-analyses">
+                        <p>No analyses performed yet. Start your first analysis to see results here.</p>
+                    </div>
+                `;
+            }
+            
+            // Clean up wrapper transitioning state
+            if (wrapper) {
+                wrapper.classList.remove('transitioning');
+            }
+        }, 700); // Height collapse duration (0.6s + buffer)
+        
+    }, 300); // Fade-out duration
+}
+
+function showMessage(text, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create and show new message
+    const message = document.createElement('div');
+    message.className = `message ${type}`;
+    message.textContent = text;
+    
+    const analysisHistory = document.querySelector('.analysis-history');
+    analysisHistory.insertBefore(message, analysisHistory.firstChild.nextSibling);
+    
+    // Auto-remove message after 5 seconds
+    setTimeout(() => {
+        if (message.parentNode) {
+            message.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

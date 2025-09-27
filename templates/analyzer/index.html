@@ -1,0 +1,715 @@
+{% extends "base.html" %}
+
+{% block title %}Document Analyzer - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prediction-probabilities-layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analyzer-page.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard.index') }}" class="logo">Predscan</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{{ url_for('dashboard.analyzer') }}" class="nav-link">
+                        <span class="nav-icon">🔍</span>
+                        <span class="nav-text">Analysis</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper" style="padding: var(--spacing-4) var(--spacing-6);">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="toast {{ 'error' if category == 'error' else 'success' }}" style="position: relative; margin-bottom: var(--spacing-4);">
+                            <div class="toast-icon">{{ '⚠️' if category == 'error' else '✓' }}</div>
+                            <div class="toast-content">
+                                <div class="toast-title">{{ 'Error' if category == 'error' else 'Success' }}</div>
+                                <div class="toast-message">{{ message }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="page-header">
+                <h1>Document Analyzer</h1>
+                <p class="page-subtitle">Advanced predatory journal detection using AI-powered analysis</p>
+            </div>
+            
+            <!-- Two Column Layout -->
+            <div class="analyzer-container">
+                <!-- Left Column -->
+                <div class="analyzer-left">
+                    <!-- Features List -->
+                    <div class="features-list">
+                        <h2>Features and Model</h2>
+                        <div class="features-content">
+                            <div class="feature-item">
+                                <div class="feature-name">Review Speed</div>
+                                <div class="feature-description">Represents the duration between submission and acceptance dates, calculated in days. A key distinguishing feature: legitimate journals have a median review time of 90 days, reflecting thorough peer review, while predatory journals have a median of 42 days, indicating rushed or superficial review processes.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name">Grammar Suggestions</div>
+                                <div class="feature-description">Represents the total number of grammatical issues in the text, identified using the LanguageTool API. Note: Longer articles naturally contain more errors, so this metric is best interpreted alongside word count. Legitimate articles (median: 170 errors) typically have higher total counts than predatory ones (median: 115 errors) due to greater length.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name">Word Count</div>
+                                <div class="feature-description">Measures the total number of words in the document. Legitimate articles typically have more comprehensive content (median: 4,333 words) compared to predatory articles (median: 3,233 words), reflecting greater depth of analysis and methodological detail.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name">Lexical Density</div>
+                                <div class="feature-description">Indicates the proportion of meaningful content words (nouns, verbs, adjectives, adverbs) to total words, computed via tokenization, stopword removal, and POS tagging.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name">Reference Count</div>
+                                <div class="feature-description">Measures the total number of cited references, indicating scholarly engagement and literature foundation. Legitimate articles typically cite more sources (median: 32 references) than predatory articles (median: 22 references), reflecting more thorough research and academic rigor.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-name">Gradient Boosting Model</div>
+                                <div class="feature-description">An ensemble machine learning algorithm that builds multiple decision trees sequentially, where each tree corrects the errors of the previous ones. It combines weak learners to create a strong predictor for distinguishing between legitimate and predatory journals.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="analyzer-right">
+                    <!-- Upload Section -->
+                    <section class="upload-section" id="upload-section">
+                        <h2>Upload Document</h2>
+                        <form method="post" enctype="multipart/form-data" id="upload-form">
+                            <div class="upload-zone" id="upload-zone">
+                                <div class="upload-content">
+                                    <div class="upload-icon">📄</div>
+                                    <h3>Select PDF File</h3>
+                                    <p>Choose a research paper or journal article to analyze</p>
+                                    <button type="button" class="upload-btn" onclick="document.getElementById('file').click()">
+                                        Browse Files
+                                    </button>
+                                    <div class="upload-constraints">
+                                        <span>PDF files only</span>
+                                        <span>Maximum 10MB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="file" name="file" id="file" style="display: none;" accept=".pdf">
+                            
+                            <div id="file-info" style="display: none; margin-top: var(--spacing-4);">
+                                <div class="file-info-card">
+                                    <div class="file-icon">📄</div>
+                                    <div class="file-details">
+                                        <h4 class="file-name" id="file-name"></h4>
+                                        <div class="file-metadata">
+                                            <span id="file-size"></span>
+                                            <span>PDF Document</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Analyze Button moved below file details -->
+                                <div class="analyze-button-section">
+                                    <button type="submit" class="analysis-btn">
+                                        <span class="btn-icon">🔍</span>
+                                        Analyze Document
+                                    </button>
+                                    
+                                    <!-- Loading Bar -->
+                                    <div id="loading-bar" class="loading-bar" style="display: none;">
+                                        <div class="loading-bar-progress" id="loading-progress" style="width: 0%;"></div>
+                                    </div>
+                                    <div id="loading-text" class="loading-text" style="display: none;">
+                                        Analyzing document...
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="error-message" style="display: none; margin-top: var(--spacing-4);">
+                                <div class="error-message">
+                                    <div class="error-icon">⚠️</div>
+                                    <div class="error-content">
+                                        <div class="error-title">Upload Error</div>
+                                        <div class="error-description" id="error-text"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+                    
+                    <!-- PDF Preview - dynamically shown after file upload -->
+                    <section class="document-preview" id="document-preview" style="display: none;">
+                        <h3>Document Preview</h3>
+                        <div class="preview-container">
+                            <iframe 
+                                id="pdf-preview-frame"
+                                class="pdf-preview"
+                                title="PDF Document Preview">
+                            </iframe>
+                        </div>
+                    </section>
+                    
+                    <!-- Template for when file is uploaded via server -->
+                    {% if preview_url %}
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            console.log('Server-side preview URL:', '{{ preview_url }}');
+                            showDocumentPreview('{{ preview_url }}');
+                            
+                            // Update file info display if elements exist
+                            const fileInfo = document.getElementById('file-info');
+                            const fileName = document.getElementById('file-name');
+                            const uploadZone = document.getElementById('upload-zone');
+                            
+                            if (fileInfo && fileName && uploadZone) {
+                                fileName.textContent = '{{ filename }}';
+                                uploadZone.style.display = 'none';
+                                fileInfo.style.display = 'block';
+                            }
+                            
+                            // Update height matching after showing preview
+                            setTimeout(updateHeightMatching, 500);
+                        });
+                    </script>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Analysis Results Section - Full Width Below Main Layout -->
+            {% if analysis_result is defined and analysis_result.success %}
+            <div class="analysis-results-section">
+                <section class="analysis-history">
+                    <h2>Analysis Results</h2>
+
+                    <div class="analysis-row analysis-row-note">
+                        <div class="model-info-card model-info-full-width" style="width: 100%; max-width: 100%;">
+                            <div class="info-text">
+                                <strong>
+                                    Disclaimer:
+                                    This tool is designed to flag journals that may show signs of predatory practices, but it does not label any journal as truly predatory. It simply checks objective features of the journal’s editorial practices and published articles.
+                                    For the best results, we recommend analyzing at least five articles from the same journal.
+                                    Please use the findings as a guide and rely on your own judgment when making decisions.
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Overall Result (Top Card) -->
+                    <div class="analysis-overall-result" style="margin-bottom: var(--spacing-8);">
+                        <div class="result-card">
+                            <div class="result-card-content">
+                                <div class="result-icon-column">
+                                    {% if analysis_result.probability_predatory > analysis_result.probability_legitimate %}
+                                        <div class="result-icon error">⚠️</div>
+                                    {% else %}
+                                        <div class="result-icon success">✓</div>
+                                    {% endif %}
+                                </div>
+                                <div class="result-text-column">
+                                    {% if analysis_result.probability_predatory > analysis_result.probability_legitimate %}
+                                        <h3 class="result-title error">Suspected Predatory</h3>
+                                        <p class="result-subtitle">Probability: {{ "%.1f"|format(analysis_result.probability_predatory) }}% predatory</p>
+                                    {% else %}
+                                        <h3 class="result-title success">Non-Predatory</h3>
+                                        <p class="result-subtitle">Probability: {{ "%.1f"|format(analysis_result.probability_legitimate) }}% legitimate</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prediction Probabilities Section - Full Width -->
+                    <div class="analysis-row" style="margin-bottom: var(--spacing-6);">
+                        <div class="analysis-card prediction-probabilities-full-width" style="width: 100%; max-width: 100%;">
+                            <div class="card-header">
+                                <h3 class="card-title">Prediction Probabilities</h3>
+                                <div class="card-icon">📊</div>
+                            </div>
+                            <div class="card-body" style="padding: var(--spacing-4);">
+                                <div class="prediction-probabilities-two-column" style="width: 100%;">
+                                    <!-- Legitimate Probability Column -->
+                                    <div class="probability-column" style="flex: 1; width: 100%;">
+                                        <div class="probability-metric-value legitimate">{{ "%.1f"|format(analysis_result.probability_legitimate) }}%</div>
+                                        <div class="probability-metric-label">Legitimate</div>
+                                    </div>
+                                    
+                                    <!-- Predatory Probability Column -->
+                                    <div class="probability-column" style="flex: 1; width: 100%;">
+                                        <div class="probability-metric-value predatory">{{ "%.1f"|format(analysis_result.probability_predatory) }}%</div>
+                                        <div class="probability-metric-label">Predatory</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Information Note - Full Width -->
+                    <div class="analysis-row analysis-row-note">
+                        <div class="model-info-card model-info-full-width" style="width: 100%; max-width: 100%;">
+                            <div class="info-icon">🤖</div>
+                            <div class="info-text">
+                                <strong>We selected five important editorial characteristics and used them to train a computer model that predicts patterns in research articles. To make the results clearer and more reliable, we compared the data using median values (the middle point of the numbers), which helps reduce the effect of unusual or extreme results. This approach gives a more accurate picture and takes into account how the characteristics work together.</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Analysis Section (Five Features) -->
+                    <div class="analysis-row">
+                        <div class="analysis-card">
+                            <div class="card-header">
+                                <h3 class="card-title">This table presents a side-by-side comparison of the median values between Non-Predatory and Suspected Predatory journals, alongside the analyzed article</h3>
+                                <div class="card-icon">📊</div>
+                            </div>
+                            <div class="card-body" style="padding: 0;">
+                                <div class="feature-analysis-grid">
+                                    <!-- Header Row -->
+                                    <div class="grid-header">
+                                        <div class="grid-cell grid-header-cell">Editorial Characteristics</div>
+                                        <div class="grid-cell grid-header-cell">Non-Predatory</div>
+                                        <div class="grid-cell grid-header-cell">Analyzed Article</div>
+                                        <div class="grid-cell grid-header-cell">Predatory</div>
+                                    </div>
+                                    
+                                    <!-- Review Speed Row -->
+                                    <div class="grid-row">
+                                        <div class="grid-cell feature-cell">
+                                            <span class="feature-icon">⏱️</span>
+                                            <span class="feature-name">Review Speed (days)</span>
+                                        </div>
+                                        <div class="grid-cell metric-cell non-predatory">
+                                            {% set non_pred_review = 90 %}
+                                            {{ "%.0f"|format(non_pred_review) }}
+                                        </div>
+                                        <div class="grid-cell metric-cell analyzed">
+                                            {% if analysis_result.features_used and analysis_result.features_used.get('review_speed') is not none %}
+                                                {{ "%.0f"|format(analysis_result.features_used.review_speed) }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="grid-cell metric-cell predatory">
+                                            {% set pred_review = 42 %}
+                                            {{ "%.0f"|format(pred_review) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Word Count Row -->
+                                    <div class="grid-row">
+                                        <div class="grid-cell feature-cell">
+                                            <span class="feature-icon">📄</span>
+                                            <span class="feature-name">Word Count (words)</span>
+                                        </div>
+                                        <div class="grid-cell metric-cell non-predatory">
+                                            {% set non_pred_words = 4333 %}
+                                            {{ "%.0f"|format(non_pred_words) }}
+                                        </div>
+                                        <div class="grid-cell metric-cell analyzed">
+                                            {% if analysis_result.features_used and analysis_result.features_used.get('word_count') is not none %}
+                                                {{ "%.0f"|format(analysis_result.features_used.word_count) }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="grid-cell metric-cell predatory">
+                                            {% set pred_words = 3232.5 %}
+                                            {{ "%.0f"|format(pred_words) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Lexical Density Row -->
+                                    <div class="grid-row">
+                                        <div class="grid-cell feature-cell">
+                                            <span class="feature-icon">🔤</span>
+                                            <span class="feature-name">Lexical Density (%)</span>
+                                        </div>
+                                        <div class="grid-cell metric-cell non-predatory">
+                                            {% set non_pred_density = 60.1 %}
+                                            {{ "%.1f"|format(non_pred_density) }}%
+                                        </div>
+                                        <div class="grid-cell metric-cell analyzed">
+                                            {% if analysis_result.features_used and analysis_result.features_used.get('lexical_density') is not none %}
+                                                {{ "%.1f"|format(analysis_result.features_used.lexical_density * 100) }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="grid-cell metric-cell predatory">
+                                            {% set pred_density = 58.84 %}
+                                            {{ "%.2f"|format(pred_density) }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reference Count Row -->
+                                    <div class="grid-row">
+                                        <div class="grid-cell feature-cell">
+                                            <span class="feature-icon">📚</span>
+                                            <span class="feature-name">Reference Count (references)</span>
+                                        </div>
+                                        <div class="grid-cell metric-cell non-predatory">
+                                            {% set non_pred_refs = 32 %}
+                                            {{ "%.0f"|format(non_pred_refs) }}
+                                        </div>
+                                        <div class="grid-cell metric-cell analyzed">
+                                            {% if analysis_result.features_used and analysis_result.features_used.get('reference_count') is not none %}
+                                                {{ "%.0f"|format(analysis_result.features_used.reference_count) }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="grid-cell metric-cell predatory">
+                                            {% set pred_refs = 22 %}
+                                            {{ "%.0f"|format(pred_refs) }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Grammar Errors Row -->
+                                    <div class="grid-row">
+                                        <div class="grid-cell feature-cell">
+                                            <span class="feature-icon">✏️</span>
+                                            <span class="feature-name">Grammar Errors (count)</span>
+                                        </div>
+                                        <div class="grid-cell metric-cell non-predatory">
+                                            {% set non_pred_grammar = 170 %}
+                                            {{ "%.0f"|format(non_pred_grammar) }}
+                                        </div>
+                                        <div class="grid-cell metric-cell analyzed">
+                                            {% if analysis_result.features_used and analysis_result.features_used.get('grammar_suggestions') is not none %}
+                                                {{ "%.0f"|format(analysis_result.features_used.grammar_suggestions) }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                        <div class="grid-cell metric-cell predatory">
+                                            {% set pred_grammar = 115 %}
+                                            {{ "%.0f"|format(pred_grammar) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Statistical Insights Section -->
+                    <div class="analysis-row">
+                        <div class="analysis-card statistical-insights-plain">
+                            <div class="card-header">
+                                <h3 class="card-title">Statistical Insights</h3>
+                            </div>
+                            <div class="card-body">
+                                <!-- Review Speed Analysis -->
+                                <h4 class="insight-title">⏱️ Review Speed Analysis</h4>
+                                {% if analysis_result.features_used and analysis_result.features_used.get('review_speed') is not none %}
+                                    {% set user_review_speed = analysis_result.features_used.review_speed %}
+                                    {% set legitimate_median = 90 %}
+                                    {% set predatory_median = 42 %}
+                                    
+                                    <p><strong>Your Article:</strong> {{ "%.0f"|format(user_review_speed) }} days</p>
+                                    <p><strong>Statistical Context:</strong> Your article's review speed of {{ "%.0f"|format(user_review_speed) }} days 
+                                    {% if user_review_speed <= predatory_median %}
+                                        is significantly faster than the legitimate journal median of {{ legitimate_median }} days, falling within the typical predatory journal range (median: {{ predatory_median }} days). This rapid turnaround may indicate insufficient peer review processes.
+                                    {% elif user_review_speed <= legitimate_median %}
+                                        falls between predatory ({{ predatory_median }} days) and legitimate ({{ legitimate_median }} days) medians, suggesting a moderate review process that could indicate either efficient legitimate review or thorough predatory screening.
+                                    {% else %}
+                                        exceeds the legitimate journal median of {{ legitimate_median }} days, indicating a thorough peer review process typical of reputable academic publications.
+                                    {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p><strong>Review Speed Information:</strong> Review speed data was not available for this document. This metric typically represents the time between submission and acceptance dates.</p>
+                                {% endif %}
+
+                                <!-- Word Count Analysis -->
+                                <h4 class="insight-title">📄 Word Count Analysis</h4>
+                                {% if analysis_result.features_used and analysis_result.features_used.get('word_count') is not none %}
+                                    {% set user_word_count = analysis_result.features_used.word_count %}
+                                    {% set legitimate_median = 4333 %}
+                                    {% set predatory_median = 3233 %}
+                                    
+                                    <p><strong>Your Article:</strong> {{ "%.0f"|format(user_word_count) }} words</p>
+                                    <p><strong>Statistical Context:</strong> Your article contains {{ "%.0f"|format(user_word_count) }} words, which is 
+                                    {% if user_word_count >= legitimate_median %}
+                                        above the legitimate journal median of {{ "%.0f"|format(legitimate_median) }} words, indicating comprehensive content typical of thorough academic research with detailed methodology and analysis.
+                                    {% elif user_word_count >= predatory_median %}
+                                        between the predatory ({{ "%.0f"|format(predatory_median) }} words) and legitimate ({{ "%.0f"|format(legitimate_median) }} words) medians, suggesting moderate content depth that requires evaluation alongside other quality indicators.
+                                    {% else %}
+                                        below the predatory journal median of {{ "%.0f"|format(predatory_median) }} words, which may indicate insufficient depth of analysis or methodology typical of lower-quality publications.
+                                    {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p><strong>Word Count Information:</strong> Word count analysis was completed for this document as part of the content depth assessment.</p>
+                                {% endif %}
+
+                                <!-- Lexical Density Analysis -->
+                                <h4 class="insight-title">🔤 Lexical Density Analysis</h4>
+                                {% if analysis_result.features_used and analysis_result.features_used.get('lexical_density') is not none %}
+                                    {% set user_lexical_density = analysis_result.features_used.lexical_density * 100 %}
+                                    {% set legitimate_median = 60.1 %}
+                                    {% set predatory_median = 58.84 %}
+                                    
+                                    <p><strong>Your Article:</strong> {{ "%.1f"|format(user_lexical_density) }}%</p>
+                                    <p><strong>Statistical Context:</strong> Your article's lexical density of {{ "%.1f"|format(user_lexical_density) }}% 
+                                    {% if user_lexical_density >= legitimate_median %}
+                                        meets or exceeds the legitimate journal median of {{ "%.1f"|format(legitimate_median) }}%, indicating a high proportion of meaningful content words (nouns, verbs, adjectives, adverbs) typical of sophisticated academic writing.
+                                    {% elif user_lexical_density >= predatory_median %}
+                                        falls between predatory ({{ "%.2f"|format(predatory_median) }}%) and legitimate ({{ "%.1f"|format(legitimate_median) }}%) medians, suggesting moderate vocabulary sophistication that requires consideration with other quality metrics.
+                                    {% else %}
+                                        is below the predatory journal median of {{ "%.2f"|format(predatory_median) }}%, which may indicate less sophisticated vocabulary usage or higher proportion of function words relative to content words.
+                                    {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p><strong>Lexical Density Information:</strong> Lexical density measures the proportion of meaningful content words to total words, computed through tokenization, stopword removal, and part-of-speech tagging.</p>
+                                {% endif %}
+
+                                <!-- Reference Count Analysis -->
+                                <h4 class="insight-title">📚 Reference Count Analysis</h4>
+                                {% if analysis_result.features_used and analysis_result.features_used.get('reference_count') is not none %}
+                                    {% set user_reference_count = analysis_result.features_used.reference_count %}
+                                    {% set legitimate_median = 32 %}
+                                    {% set predatory_median = 22 %}
+                                    
+                                    <p><strong>Your Article:</strong> {{ "%.0f"|format(user_reference_count) }} references</p>
+                                    <p><strong>Statistical Context:</strong> Your article cites {{ "%.0f"|format(user_reference_count) }} references, which 
+                                    {% if user_reference_count >= legitimate_median %}
+                                        meets or exceeds the legitimate journal median of {{ legitimate_median }} references, demonstrating strong scholarly engagement with existing literature and thorough research foundation.
+                                    {% elif user_reference_count >= predatory_median %}
+                                        falls between predatory ({{ predatory_median }} references) and legitimate ({{ legitimate_median }} references) medians, indicating moderate literature engagement that should be evaluated alongside research scope and methodology.
+                                    {% else %}
+                                        is below the predatory journal median of {{ predatory_median }} references, which may suggest limited literature review or insufficient engagement with the existing scholarly discourse in the field.
+                                    {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p><strong>Reference Count Information:</strong> Reference count analysis measures scholarly engagement and literature foundation through citation patterns.</p>
+                                {% endif %}
+
+                                <!-- Grammar Suggestions Analysis -->
+                                <h4 class="insight-title">✏️ Grammar Analysis</h4>
+                                {% if analysis_result.features_used and analysis_result.features_used.get('grammar_suggestions') is not none %}
+                                    {% set user_grammar_errors = analysis_result.features_used.grammar_suggestions %}
+                                    {% set user_word_count = analysis_result.features_used.get('word_count', 1) %}
+                                    {% set error_rate = (user_grammar_errors / user_word_count * 1000) if user_word_count > 0 else 0 %}
+                                    {% set legitimate_median = 170 %}
+                                    {% set predatory_median = 115 %}
+                                    
+                                    <p><strong>Your Article:</strong> {{ "%.0f"|format(user_grammar_errors) }} grammar suggestions ({{ "%.1f"|format(error_rate) }} per 1000 words)</p>
+                                    <p><strong>Statistical Context:</strong> Your article has {{ "%.0f"|format(user_grammar_errors) }} grammar suggestions. 
+                                    {% if user_grammar_errors <= predatory_median %}
+                                        This is at or below the predatory journal median of {{ predatory_median }} errors. While fewer errors might seem positive, it could indicate shorter content length or potentially less rigorous editorial oversight in context of article length.
+                                    {% elif user_grammar_errors <= legitimate_median %}
+                                        This falls between predatory ({{ predatory_median }} errors) and legitimate ({{ legitimate_median }} errors) medians. The grammar error count should be interpreted relative to article length and content complexity.
+                                    {% else %}
+                                        This exceeds the legitimate journal median of {{ legitimate_median }} errors. However, legitimate journals often have higher total error counts due to longer, more comprehensive articles. The error rate per 1000 words ({{ "%.1f"|format(error_rate) }}) provides better context for quality assessment.
+                                    {% endif %}
+                                    </p>
+                                    <p><strong>Important Note:</strong> Grammar error counts correlate with article length. Longer articles naturally contain more errors in absolute terms, so the error rate per 1000 words is more meaningful for quality assessment than total count alone.</p>
+                                {% else %}
+                                    <p><strong>Grammar Analysis Information:</strong> Grammar analysis uses the LanguageTool API to identify grammatical issues, with results interpreted in context of document length.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Importance Section -->
+                    <div class="analysis-row">
+                        <div class="analysis-card statistical-insights-plain">
+                            <div class="card-header">
+                                <h3 class="card-title">Feature Importance</h3>
+                            </div>
+                            <div class="card-body">
+                                <!-- Feature Importance Subsection -->
+                                <h4 class="insight-title">📊 Feature Importance</h4>
+                                <p>By testing and narrowing down different factors, five key editorial characteristics were found to be the most useful in telling apart Non-Predatory journals from Suspected predatory ones. These characteristics show which aspects have the biggest influence on the system’s decisions.</p>
+
+                                <!-- Explanatory Text -->
+                                <div style="margin-top: var(--spacing-4); padding: var(--spacing-3); background: var(--info-50); border-radius: var(--border-radius); border-left: 4px solid var(--info);">
+                                    <h5 style="margin: 0 0 var(--spacing-2) 0; color: var(--info); font-weight: 600;">Understanding Feature Importance</h5>
+                                    <p style="margin: 0;">These importance scores represent the relative contribution of each feature to the model's predictive power. <strong>Review Speed</strong> emerges as the most critical indicator (30.4%), as predatory journals typically exhibit significantly faster publication timelines compared to legitimate journals with thorough peer review processes. <strong>Word Count</strong> (23.6%) and <strong>Lexical Density</strong> (17.5%) together reflect the depth and sophistication of academic content, while <strong>Reference Count</strong> (14.7%) indicates scholarly engagement with existing literature. <strong>Grammar Errors</strong> (13.8%), though contextual to article length, provide insights into editorial quality and oversight standards.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Summary Section (Bottom Card) -->
+                    <div class="analysis-row analysis-row-detailed">
+                        <div class="detailed-analysis-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Analysis Summary</h3>
+                                <div class="card-icon">📋</div>
+                            </div>
+                            <div class="card-body">
+                                {% if analysis_result.probability_predatory > analysis_result.probability_legitimate %}
+                                    <div class="analysis-remark" style="color: var(--error);">
+                                        <strong>⚠️ Warning: Suspected Predatory</strong>
+                                    </div>
+                                    <div class="analysis-description">
+                                        The article was classified as Predatory by the model. This outcome indicates that, based on the combined influence of features such as review speed, word count, lexical density, reference count, and grammar errors, the article shows patterns commonly associated with questionable or low-quality publishing practices. The analysis reveals characteristics that deviate from standard academic publishing norms. <strong>Caution is advised</strong> - it is not recommended to rely on this article for academic or research purposes without further verification.
+                                    </div>
+                                {% else %}
+                                    <div class="analysis-remark" style="color: var(--success);">
+                                        <strong>✅ Non-Predatory Publication Detected</strong>
+                                    </div>
+                                    <div class="analysis-description">
+                                        The article was classified as Non-Predatory by the model. This outcome means that, based on the combined influence of features such as review speed, word count, lexical density, reference count, and grammar errors, the article aligns closely with patterns typically observed in reputable and legitimate scholarly publications. The analysis indicates adherence to standard academic publishing practices and quality indicators. <strong>This article is recommended</strong> for use in academic and research purposes.
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Technical Details -->
+                                <div style="margin-top: var(--spacing-4); padding-top: var(--spacing-4); border-top: 1px solid var(--gray-200);">
+                                    <div style="font-size: var(--font-sm); color: var(--gray-600);">
+                                        <strong>Technical Details:</strong> Analysis performed using 
+                                        {% if analysis_result.model_info %}
+                                            {{ analysis_result.model_info.get('model_name', 'Gradient Boosting Model') }}
+                                            {% if analysis_result.model_info.get('version') %}
+                                                v{{ analysis_result.model_info.version }}
+                                            {% endif %}
+                                        {% else %}
+                                            Gradient Boosting Model
+                                        {% endif %}
+                                        with 5 key features selected through recursive feature elimination.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-row analysis-row-note">
+                        <div class="model-info-card model-info-full-width" style="width: 100%; max-width: 100%;">
+                            <div class="info-text">
+                                <strong>
+                                    Disclaimer:
+                                    This tool is designed to flag journals that may show signs of predatory practices, but it does not label any journal as truly predatory. It simply checks objective features of the journal’s editorial practices and published articles.
+                                    For the best results, we recommend analyzing at least five articles from the same journal.
+                                    Please use the findings as a guide and rely on your own judgment when making decisions.
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Save Analysis Section -->
+                <div class="save-analysis-section">
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <button class="save-analysis-btn" onclick="saveAnalysisNew()">
+                            <span class="btn-icon">💾</span>
+                            Save Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% elif analysis_result is defined and not analysis_result.success %}
+            <!-- Error Display Section -->
+            <div class="analysis-results-section">
+                <section class="analysis-history">
+                    <h2>Analysis Results</h2>
+                    
+                    <!-- Error Result -->
+                    <div class="analysis-overall-result" style="margin-bottom: var(--spacing-8);">
+                        <div class="result-card" style="border-color: var(--error);">
+                            <div class="result-card-content">
+                                <div class="result-icon-column">
+                                    <div class="result-icon error">❌</div>
+                                </div>
+                                <div class="result-text-column">
+                                    <h3 class="result-title error">Analysis Failed</h3>
+                                    <p class="result-subtitle">{{ analysis_result.error_message or "An error occurred during analysis. Please try again." }}</p>
+                                    <span class="result-badge" style="background: var(--error-50); color: var(--error); border-color: var(--error);">Error</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Error Details -->
+                    <div class="analysis-row">
+                        <div class="detailed-analysis-card" style="border-color: var(--error);">
+                            <div class="card-header" style="background: linear-gradient(135deg, var(--error-50) 0%, var(--gray-50) 100%);">
+                                <h3 class="card-title" style="color: var(--error);">Error Details</h3>
+                                <div class="card-icon" style="color: var(--error);">⚠️</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="analysis-description">
+                                    The document analysis could not be completed. This may be due to:
+                                    <ul style="margin: var(--spacing-3) 0; padding-left: var(--spacing-5);">
+                                        <li>Unsupported document format or corrupted file</li>
+                                        <li>Insufficient text content for analysis</li>
+                                        <li>Technical issues with the analysis engine</li>
+                                    </ul>
+                                    Please try uploading a different PDF document or contact support if the issue persists.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Server-side data injection for template variables -->
+{% if analysis_result is defined and analysis_result.success %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Analysis results are present, stop the loading animation
+        setTimeout(() => {
+            if (typeof stopAnalysisLoading === 'function') {
+                stopAnalysisLoading();
+            }
+        }, 500);
+    });
+</script>
+{% endif %}
+
+<!-- Template for when file is uploaded via server -->
+{% if preview_url %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Server-side preview URL:', '{{ preview_url }}');
+        showDocumentPreview('{{ preview_url }}');
+        
+        // Update file info display if elements exist
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const uploadZone = document.getElementById('upload-zone');
+        
+        if (fileInfo && fileName && uploadZone) {
+            fileName.textContent = '{{ filename }}';
+            uploadZone.style.display = 'none';
+            fileInfo.style.display = 'block';
+        }
+        
+        // Update height matching after showing preview
+        setTimeout(updateHeightMatching, 500);
+    });
+</script>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/analyzer-page.js') }}"></script>
+{% endblock %}

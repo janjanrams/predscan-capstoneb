@@ -1,0 +1,902 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logs - Admin - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* Activity logs specific styles */
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.logs-header h1 {
+    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.log-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.log-stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number.error {
+    color: #dc2626;
+}
+
+.stat-number.warning {
+    color: #d97706;
+}
+
+.stat-number.info {
+    color: #2563eb;
+}
+
+.stat-number.success {
+    color: #059669;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.filters-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.logs-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.logs-header-bar {
+    background: #f9fafb;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logs-title {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.logs-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.logs-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.log-entry {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.log-entry:hover {
+    background: #f9fafb;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-level {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    min-width: 60px;
+    text-align: center;
+}
+
+.log-level.error {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.log-level.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.log-level.info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.log-level.debug {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.log-level.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.log-timestamp {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-family: 'Courier New', monospace;
+    min-width: 140px;
+}
+
+.log-message {
+    color: #1f2937;
+    font-size: 0.875rem;
+}
+
+.log-source {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-align: right;
+}
+
+.log-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.log-action-btn {
+    padding: 0.25rem;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.log-action-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.log-details {
+    grid-column: 1 / -1;
+    background: #f9fafb;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #4b5563;
+    display: none;
+}
+
+.log-details.expanded {
+    display: block;
+}
+
+.real-time-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 20px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #053460;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+.export-options {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    min-width: 150px;
+}
+
+.export-options.show {
+    display: block;
+}
+
+.export-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.2s ease;
+}
+
+.export-option:hover {
+    background: #f9fafb;
+}
+
+.export-option:last-child {
+    border-bottom: none;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+}
+
+.page-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 1024px) {
+    .logs-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .filter-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .log-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .log-entry {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .log-entry > * {
+        justify-self: start;
+    }
+    
+    .log-actions {
+        justify-self: end;
+        grid-row: 1;
+        grid-column: 1;
+        justify-self: end;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('admin.index') }}" class="logo">Predscan Admin</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">
+                        <span class="nav-icon">⚡</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analyses') }}" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Analysis Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system') }}" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">System Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{{ url_for('admin.logs') }}" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Activity Logs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                    <div class="admin-badge">Admin</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="logs-header">
+                <h1>Activity Logs</h1>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <div class="real-time-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="realTimeToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span style="font-size: 0.875rem; color: #374151;">Real-time</span>
+                    </div>
+                    <div style="position: relative;">
+                        <button class="admin-btn secondary" onclick="toggleExportOptions()">Export Logs</button>
+                        <div class="export-options" id="exportOptions">
+                            <div class="export-option" onclick="exportLogs('csv')">Export as CSV</div>
+                            <div class="export-option" onclick="exportLogs('json')">Export as JSON</div>
+                            <div class="export-option" onclick="exportLogs('txt')">Export as Text</div>
+                        </div>
+                    </div>
+                    <button class="admin-btn" onclick="clearLogs()">Clear Logs</button>
+                </div>
+            </div>
+            
+            <!-- Log Statistics -->
+            <div class="log-stats">
+                <div class="log-stat-card">
+                    <div class="stat-number error">{{ log_stats.errors or 0 }}</div>
+                    <div class="stat-label">Errors (24h)</div>
+                </div>
+                <div class="log-stat-card">
+                    <div class="stat-number warning">{{ log_stats.warnings or 0 }}</div>
+                    <div class="stat-label">Warnings (24h)</div>
+                </div>
+                <div class="log-stat-card">
+                    <div class="stat-number info">{{ log_stats.total_today or 0 }}</div>
+                    <div class="stat-label">Total Logs Today</div>
+                </div>
+                <div class="log-stat-card">
+                    <div class="stat-number success">{{ log_stats.uptime or '99.9' }}%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+            </div>
+            
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Search Logs</label>
+                        <input type="text" class="filter-input" placeholder="Search by message or source..." id="searchLogs">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Log Level</label>
+                        <select class="filter-select" id="levelFilter">
+                            <option value="">All Levels</option>
+                            <option value="error">Error</option>
+                            <option value="warning">Warning</option>
+                            <option value="info">Info</option>
+                            <option value="debug">Debug</option>
+                            <option value="success">Success</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Source</label>
+                        <select class="filter-select" id="sourceFilter">
+                            <option value="">All Sources</option>
+                            <option value="auth">Authentication</option>
+                            <option value="analysis">Analysis Engine</option>
+                            <option value="api">API</option>
+                            <option value="system">System</option>
+                            <option value="database">Database</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Time Range</label>
+                        <select class="filter-select" id="timeFilter">
+                            <option value="">All Time</option>
+                            <option value="1h">Last Hour</option>
+                            <option value="6h">Last 6 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="admin-btn secondary" onclick="resetFilters()">Reset Filters</button>
+                    <button class="admin-btn" onclick="applyFilters()">Apply Filters</button>
+                </div>
+            </div>
+            
+            <!-- Logs Container -->
+            <div class="logs-container">
+                <div class="logs-header-bar">
+                    <span class="logs-title">System Activity Logs</span>
+                    <div class="logs-controls">
+                        <button class="admin-btn secondary" onclick="refreshLogs()">Refresh</button>
+                        <button class="admin-btn secondary" onclick="scrollToTop()">Top</button>
+                        <button class="admin-btn secondary" onclick="scrollToBottom()">Bottom</button>
+                    </div>
+                </div>
+                
+                <div class="logs-list" id="logsList">
+                    {% if logs %}
+                        {% for log in logs %}
+                        <div class="log-entry" data-level="{{ log.level.lower() if log.level else 'info' }}" 
+                             data-source="{{ log.source or 'system' }}" data-timestamp="{{ log.timestamp.isoformat() if log.timestamp else '' }}">
+                            <div class="log-level {{ log.level.lower() if log.level else 'info' }}">
+                                {{ log.level or 'INFO' }}
+                            </div>
+                            <div class="log-timestamp">
+                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'Unknown time' }}
+                            </div>
+                            <div class="log-message">
+                                {{ log.message or 'No message' }}
+                            </div>
+                            <div class="log-source">
+                                {{ log.source or 'system' }}
+                            </div>
+                            <div class="log-actions">
+                                <button class="log-action-btn" onclick="toggleLogDetails(this)" title="Show details">
+                                    👁️
+                                </button>
+                                <button class="log-action-btn" onclick="copyLog(this)" title="Copy log">
+                                    📋
+                                </button>
+                            </div>
+                            {% if log.details %}
+                            <div class="log-details">
+                                {{ log.details }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="log-entry">
+                            <div style="grid-column: 1 / -1; text-align: center; color: #6b7280; padding: 2rem;">
+                                No logs found
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="pagination">
+                    <button class="admin-btn secondary" onclick="previousPage()" id="prevBtn">← Previous</button>
+                    <span class="page-info">Page 1 of {{ total_pages or 1 }} ({{ total_logs or 0 }} logs)</span>
+                    <button class="admin-btn secondary" onclick="nextPage()" id="nextBtn">Next →</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+let currentPage = 1;
+let totalPages = {{ total_pages or 1 }};
+let realTimeEnabled = false;
+let realTimeInterval;
+
+// Real-time toggle functionality
+document.getElementById('realTimeToggle').addEventListener('change', function() {
+    realTimeEnabled = this.checked;
+    if (realTimeEnabled) {
+        startRealTimeUpdates();
+    } else {
+        stopRealTimeUpdates();
+    }
+});
+
+function startRealTimeUpdates() {
+    realTimeInterval = setInterval(() => {
+        fetch('/admin/logs/recent', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.new_logs && data.new_logs.length > 0) {
+                prependNewLogs(data.new_logs);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching real-time logs:', error);
+        });
+    }, 5000); // Check for new logs every 5 seconds
+}
+
+function stopRealTimeUpdates() {
+    if (realTimeInterval) {
+        clearInterval(realTimeInterval);
+        realTimeInterval = null;
+    }
+}
+
+function prependNewLogs(newLogs) {
+    const logsList = document.getElementById('logsList');
+    const existingLogs = logsList.querySelectorAll('.log-entry');
+    
+    newLogs.forEach(log => {
+        const logElement = createLogElement(log);
+        logsList.insertBefore(logElement, existingLogs[0] || null);
+    });
+    
+    // Remove excess logs to maintain performance
+    const allLogs = logsList.querySelectorAll('.log-entry');
+    if (allLogs.length > 500) {
+        for (let i = 500; i < allLogs.length; i++) {
+            allLogs[i].remove();
+        }
+    }
+}
+
+function createLogElement(log) {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.setAttribute('data-level', log.level.toLowerCase());
+    div.setAttribute('data-source', log.source || 'system');
+    div.setAttribute('data-timestamp', log.timestamp);
+    
+    div.innerHTML = `
+        <div class="log-level ${log.level.toLowerCase()}">${log.level}</div>
+        <div class="log-timestamp">${log.formatted_timestamp}</div>
+        <div class="log-message">${log.message}</div>
+        <div class="log-source">${log.source || 'system'}</div>
+        <div class="log-actions">
+            <button class="log-action-btn" onclick="toggleLogDetails(this)" title="Show details">👁️</button>
+            <button class="log-action-btn" onclick="copyLog(this)" title="Copy log">📋</button>
+        </div>
+        ${log.details ? `<div class="log-details">${log.details}</div>` : ''}
+    `;
+    
+    return div;
+}
+
+function toggleLogDetails(button) {
+    const logEntry = button.closest('.log-entry');
+    const details = logEntry.querySelector('.log-details');
+    if (details) {
+        details.classList.toggle('expanded');
+        button.textContent = details.classList.contains('expanded') ? '🔼' : '👁️';
+    }
+}
+
+function copyLog(button) {
+    const logEntry = button.closest('.log-entry');
+    const level = logEntry.querySelector('.log-level').textContent;
+    const timestamp = logEntry.querySelector('.log-timestamp').textContent;
+    const message = logEntry.querySelector('.log-message').textContent;
+    const source = logEntry.querySelector('.log-source').textContent;
+    
+    const logText = `[${timestamp}] ${level} ${source}: ${message}`;
+    
+    navigator.clipboard.writeText(logText).then(() => {
+        showMessage('Log copied to clipboard', 'success');
+    }).catch(() => {
+        showMessage('Failed to copy log', 'error');
+    });
+}
+
+function toggleExportOptions() {
+    const options = document.getElementById('exportOptions');
+    options.classList.toggle('show');
+}
+
+function exportLogs(format) {
+    const params = new URLSearchParams({
+        format: format,
+        level: document.getElementById('levelFilter').value,
+        source: document.getElementById('sourceFilter').value,
+        time: document.getElementById('timeFilter').value,
+        search: document.getElementById('searchLogs').value
+    });
+    
+    window.location.href = `/admin/logs/export?${params}`;
+    document.getElementById('exportOptions').classList.remove('show');
+}
+
+function clearLogs() {
+    if (confirm('Are you sure you want to clear all logs? This action cannot be undone.')) {
+        fetch('/admin/logs/clear', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('Logs cleared successfully', 'success');
+                location.reload();
+            } else {
+                showMessage('Failed to clear logs', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error clearing logs', 'error');
+        });
+    }
+}
+
+function refreshLogs() {
+    location.reload();
+}
+
+function scrollToTop() {
+    document.getElementById('logsList').scrollTop = 0;
+}
+
+function scrollToBottom() {
+    const logsList = document.getElementById('logsList');
+    logsList.scrollTop = logsList.scrollHeight;
+}
+
+function applyFilters() {
+    const searchTerm = document.getElementById('searchLogs').value.toLowerCase();
+    const levelFilter = document.getElementById('levelFilter').value;
+    const sourceFilter = document.getElementById('sourceFilter').value;
+    const timeFilter = document.getElementById('timeFilter').value;
+    
+    const logEntries = document.querySelectorAll('.log-entry[data-level]');
+    let visibleCount = 0;
+    
+    logEntries.forEach(entry => {
+        const message = entry.querySelector('.log-message')?.textContent.toLowerCase() || '';
+        const level = entry.getAttribute('data-level');
+        const source = entry.getAttribute('data-source');
+        const timestamp = entry.getAttribute('data-timestamp');
+        
+        const matchesSearch = !searchTerm || message.includes(searchTerm);
+        const matchesLevel = !levelFilter || level === levelFilter;
+        const matchesSource = !sourceFilter || source === sourceFilter;
+        const matchesTime = !timeFilter || matchesTimeRange(timestamp, timeFilter);
+        
+        if (matchesSearch && matchesLevel && matchesSource && matchesTime) {
+            entry.style.display = 'grid';
+            visibleCount++;
+        } else {
+            entry.style.display = 'none';
+        }
+    });
+    
+    showMessage(`Showing ${visibleCount} logs`, 'info');
+}
+
+function matchesTimeRange(timestamp, timeFilter) {
+    if (!timestamp || !timeFilter) return true;
+    
+    const logTime = new Date(timestamp);
+    const now = new Date();
+    const diff = now - logTime;
+    
+    switch (timeFilter) {
+        case '1h': return diff <= 60 * 60 * 1000;
+        case '6h': return diff <= 6 * 60 * 60 * 1000;
+        case '24h': return diff <= 24 * 60 * 60 * 1000;
+        case '7d': return diff <= 7 * 24 * 60 * 60 * 1000;
+        case '30d': return diff <= 30 * 24 * 60 * 60 * 1000;
+        default: return true;
+    }
+}
+
+function resetFilters() {
+    document.getElementById('searchLogs').value = '';
+    document.getElementById('levelFilter').value = '';
+    document.getElementById('sourceFilter').value = '';
+    document.getElementById('timeFilter').value = '';
+    
+    const logEntries = document.querySelectorAll('.log-entry[data-level]');
+    logEntries.forEach(entry => {
+        entry.style.display = 'grid';
+    });
+    
+    showMessage('Filters reset', 'info');
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadPage(currentPage);
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        loadPage(currentPage);
+    }
+}
+
+function loadPage(page) {
+    const params = new URLSearchParams({
+        page: page,
+        level: document.getElementById('levelFilter').value,
+        source: document.getElementById('sourceFilter').value,
+        time: document.getElementById('timeFilter').value,
+        search: document.getElementById('searchLogs').value
+    });
+    
+    window.location.href = `/admin/logs?${params}`;
+}
+
+function showMessage(text, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.admin-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create and show new message
+    const message = document.createElement('div');
+    message.className = `admin-message message ${type}`;
+    message.textContent = text;
+    
+    const contentWrapper = document.querySelector('.content-wrapper');
+    contentWrapper.insertBefore(message, contentWrapper.firstChild);
+    
+    // Auto-remove message after 3 seconds
+    setTimeout(() => {
+        if (message.parentNode) {
+            message.remove();
+        }
+    }, 3000);
+}
+
+// Close export options when clicking elsewhere
+document.addEventListener('click', function(event) {
+    const exportBtn = event.target.closest('button');
+    const exportOptions = document.getElementById('exportOptions');
+    
+    if (!exportBtn || !exportBtn.textContent.includes('Export')) {
+        exportOptions.classList.remove('show');
+    }
+});
+
+// Filter inputs event listeners
+document.getElementById('searchLogs').addEventListener('input', debounce(applyFilters, 300));
+document.getElementById('levelFilter').addEventListener('change', applyFilters);
+document.getElementById('sourceFilter').addEventListener('change', applyFilters);
+document.getElementById('timeFilter').addEventListener('change', applyFilters);
+
+// Debounce function to limit search input frequency
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Auto-scroll to bottom for real-time logs
+function autoScrollToBottom() {
+    if (realTimeEnabled) {
+        scrollToBottom();
+    }
+}
+
+// Update pagination buttons
+function updatePaginationButtons() {
+    document.getElementById('prevBtn').disabled = currentPage <= 1;
+    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updatePaginationButtons();
+});
+</script>
+{% endblock %}

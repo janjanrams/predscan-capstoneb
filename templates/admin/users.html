@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Admin - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* Admin users page specific styles */
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.users-header h1 {
+    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.search-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 250px;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.filter-select {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+}
+
+.users-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    background: #f9fafb;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-title {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.users-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.user-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.user-row:hover {
+    background: #f9fafb;
+}
+
+.user-row:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.user-email {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.user-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.user-status.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.user-status.inactive {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.user-status.suspended {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.user-date {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #f3f4f6;
+}
+
+.action-btn.edit {
+    color: #059669;
+    border-color: #059669;
+}
+
+.action-btn.edit:hover {
+    background: #ecfdf5;
+}
+
+.action-btn.suspend {
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.action-btn.suspend:hover {
+    background: #fef2f2;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+}
+
+.page-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.page-btn:hover {
+    background: #f3f4f6;
+}
+
+.page-btn.active {
+    background: #053460;
+    color: white;
+    border-color: #053460;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 10% auto;
+    position: relative;
+}
+
+.modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .users-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .search-filters {
+        flex-direction: column;
+    }
+    
+    .search-input,
+    .filter-select {
+        min-width: 100%;
+    }
+    
+    .user-row {
+        grid-template-columns: auto 1fr;
+        gap: 0.75rem;
+    }
+    
+    .user-status,
+    .user-date,
+    .user-actions {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation (same as admin index) -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('admin.index') }}" class="logo">Predscan Admin</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">
+                        <span class="nav-icon">⚡</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.analyses') }}" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Analysis Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.system') }}" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">System Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.logs') }}" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Activity Logs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                    <div class="admin-badge">Admin</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="users-header">
+                <h1>User Management</h1>
+                <button class="admin-btn" onclick="openAddUserModal()">
+                    <span>➕</span>
+                    Add New User
+                </button>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="search-filters">
+                <input type="text" class="search-input" placeholder="Search users by name or email..." id="userSearch">
+                <select class="filter-select" id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+                <select class="filter-select" id="roleFilter">
+                    <option value="">All Roles</option>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="users-table">
+                <div class="table-header">
+                    <span class="table-title">All Users ({{ users|length if users else 0 }})</span>
+                    <div class="table-actions">
+                        <button class="admin-btn secondary" onclick="exportUsers()">Export</button>
+                        <button class="admin-btn secondary" onclick="refreshUsers()">Refresh</button>
+                    </div>
+                </div>
+                
+                <div class="users-list" id="usersList">
+                    {% if users %}
+                        {% for user in users %}
+                        <div class="user-row" data-user-id="{{ user.id }}">
+                            <div class="user-avatar">{{ user.full_name[:2].upper() }}</div>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                            <div class="user-status {{ user.status or 'active' }}">
+                                {{ user.status.title() if user.status else 'Active' }}
+                            </div>
+                            <div class="user-date">
+                                {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'Unknown' }}
+                            </div>
+                            <div class="user-actions">
+                                <button class="action-btn edit" onclick="editUser({{ user.id }})">Edit</button>
+                                {% if user.status != 'suspended' %}
+                                <button class="action-btn suspend" onclick="suspendUser({{ user.id }})">Suspend</button>
+                                {% else %}
+                                <button class="action-btn edit" onclick="unsuspendUser({{ user.id }})">Activate</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="user-row">
+                            <div style="grid-column: 1 / -1; text-align: center; color: #6b7280;">
+                                No users found
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="pagination">
+                    <button class="page-btn" disabled>&laquo; Previous</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn" disabled>Next &raquo;</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal" id="addUserModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAddUserModal()">&times;</button>
+        <div class="modal-header">
+            <h2 class="modal-title">Add New User</h2>
+        </div>
+        <form id="addUserForm">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="email" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                <select class="form-input" id="role">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="admin-btn secondary" onclick="closeAddUserModal()">Cancel</button>
+                <button type="submit" class="admin-btn">Add User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// User management functions
+function openAddUserModal() {
+    document.getElementById('addUserModal').style.display = 'block';
+}
+
+function closeAddUserModal() {
+    document.getElementById('addUserModal').style.display = 'none';
+    document.getElementById('addUserForm').reset();
+}
+
+function editUser(userId) {
+    // Implement edit user functionality
+    console.log('Edit user:', userId);
+}
+
+function suspendUser(userId) {
+    if (confirm('Are you sure you want to suspend this user?')) {
+        // Implement suspend user functionality
+        console.log('Suspend user:', userId);
+    }
+}
+
+function unsuspendUser(userId) {
+    if (confirm('Are you sure you want to activate this user?')) {
+        // Implement unsuspend user functionality
+        console.log('Unsuspend user:', userId);
+    }
+}
+
+function exportUsers() {
+    window.location.href = "{{ url_for('admin.export_users') }}";
+}
+
+function refreshUsers() {
+    location.reload();
+}
+
+// Search and filter functionality
+document.getElementById('userSearch').addEventListener('input', filterUsers);
+document.getElementById('statusFilter').addEventListener('change', filterUsers);
+document.getElementById('roleFilter').addEventListener('change', filterUsers);
+
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const roleFilter = document.getElementById('roleFilter').value;
+    
+    const userRows = document.querySelectorAll('.user-row');
+    
+    userRows.forEach(row => {
+        const userName = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
+        const userEmail = row.querySelector('.user-email')?.textContent.toLowerCase() || '';
+        const userStatus = row.querySelector('.user-status')?.textContent.toLowerCase() || '';
+        
+        const matchesSearch = userName.includes(searchTerm) || userEmail.includes(searchTerm);
+        const matchesStatus = !statusFilter || userStatus.includes(statusFilter);
+        const matchesRole = !roleFilter || true; // Role matching would need additional data
+        
+        if (matchesSearch && matchesStatus && matchesRole) {
+            row.style.display = 'grid';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Form submission
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        full_name: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+    };
+    
+    // Implement API call to add user
+    console.log('Add user:', formData);
+    closeAddUserModal();
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('addUserModal');
+    if (event.target === modal) {
+        closeAddUserModal();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+/* Responsive Utilities - Global responsive helpers */
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Focus management for keyboard users */
+@media (hover: none) {
+    .btn:hover {
+        transform: none;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+    .btn,
+    .form-input,
+    .btn-link,
+    .logout-btn {
+        min-height: 2.75rem;
+        touch-action: manipulation;
+    }
+    
+    .form-input {
+        font-size: 1rem; /* Prevent zoom on iOS */
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .form-input {
+        border-width: 3px;
+    }
+    
+    .btn {
+        border: 2px solid;
+    }
+    
+    .btn-primary {
+        border-color: var(--white);
+    }
+    
+    .btn-secondary {
+        border-color: var(--white);
+    }
+}
+
+/* Dark mode preference (future enhancement) */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles would go here when implemented */
+}
+
+/* Container queries for future enhancement */
+@supports (container-type: inline-size) {
+    .form-container {
+        container-type: inline-size;
+    }
+}
+
+/* Utility classes for responsive behavior */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Hide elements on specific screen sizes */
+@media (max-width: 640px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 641px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Text wrapping utilities */
+.text-wrap-balance {
+    text-wrap: balance;
+}
+
+.text-wrap-pretty {
+    text-wrap: pretty;
+}
+
+/* Responsive text sizes */
+.text-fluid {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.text-fluid-lg {
+    font-size: clamp(1.125rem, 3vw, 1.25rem);
+}
+
+.text-fluid-xl {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+}
+
+/* Safe area insets for devices with notches */
+@supports (padding: max(0px)) {
+    .safe-area-inset {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    
+    .safe-area-inset-top {
+        padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    .safe-area-inset-bottom {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}

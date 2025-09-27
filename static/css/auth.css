@@ -1,0 +1,466 @@
+/* Authentication Pages - Simple and Minimalist Design */
+:root {
+    --dark-blue: #053460;
+    --orange: #f15f28;
+    --warm-yellow: #f4b556;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --text-gray: #6c757d;
+    --border-gray: #e9ecef;
+    --overlay-dark: rgba(5, 52, 96, 0.85);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    color: var(--dark-blue);
+    background-color: var(--dark-blue);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Main Container - Simple Split Layout */
+.auth-container {
+    display: flex;
+    height: 100vh;
+    position: relative;
+}
+
+/* Logo Placeholder - Simple positioning */
+.logo-placeholder {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    width: 5rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Left Side - Image Section */
+.image-section {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(45deg, 
+        rgba(5, 52, 96, 0.95) 0%, 
+        rgba(5, 52, 96, 0.8) 50%, 
+        rgba(241, 95, 40, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-overlay {
+    text-align: center;
+    color: var(--white);
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.image-overlay h2 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.image-overlay p {
+    font-size: 1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+/* Right Side - Form Section - Compact */
+.form-section {
+    flex: 1;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 360px;
+    padding: 1.5rem;
+    background: var(--white);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(5, 52, 96, 0.1);
+}
+
+/* Logo and Branding - Compact */
+.logo {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo-text {
+    color: var(--dark-blue);
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.logo-subtitle {
+    color: var(--text-gray);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Form Headers - Compact */
+.form-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.form-title {
+    color: var(--dark-blue);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.form-subtitle {
+    color: var(--text-gray);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Form Styles - Compact and Static */
+.form {
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    color: var(--dark-blue);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--border-gray);
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: var(--white);
+    color: var(--dark-blue);
+    transition: border-color 0.15s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--orange);
+}
+
+.form-input::placeholder {
+    color: var(--text-gray);
+    font-weight: 400;
+}
+
+/* Buttons - Compact and Static */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    text-align: center;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    background-color: var(--dark-blue);
+    color: var(--white);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #074481;
+}
+
+.btn-secondary {
+    background-color: var(--orange);
+    color: var(--white);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #d54c1f;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--orange);
+    font-size: 0.875rem;
+    text-decoration: none;
+    font-weight: 600;
+    width: auto;
+    min-height: auto;
+    padding: 0.25rem 0;
+    transition: color 0.15s ease;
+    display: inline;
+}
+
+.btn-link:hover {
+    color: #d54c1f;
+    text-decoration: underline;
+}
+
+/* Divider - Simple */
+.divider {
+    margin: 1.5rem 0;
+    text-align: center;
+    position: relative;
+    color: var(--text-gray);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-gray);
+}
+
+.divider span {
+    background-color: var(--white);
+    padding: 0 1rem;
+    position: relative;
+}
+
+/* Links and Text - Simple */
+.link-text {
+    color: var(--text-gray);
+    font-size: 0.875rem;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.link-text a {
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-text a:hover {
+    text-decoration: underline;
+}
+
+/* Hide flash messages completely */
+.message {
+    display: none !important;
+}
+
+/* Form validation - minimal styling */
+.form-group.has-error .form-input {
+    border-color: #dc3545;
+}
+
+.form-group.has-success .form-input {
+    border-color: var(--warm-yellow);
+}
+
+.form-help-text {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    margin-top: 0.25rem;
+    line-height: 1.3;
+}
+
+.form-help-text.error {
+    color: #dc3545;
+}
+
+.form-help-text.success {
+    color: var(--warm-yellow);
+}
+
+/* Responsive Design - Mobile First */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+    }
+    
+    .image-section {
+        flex: 0 0 30vh;
+    }
+    
+    .form-section {
+        flex: 1;
+        padding: 1rem;
+    }
+    
+    .form-container {
+        max-width: 100%;
+        padding: 1rem;
+    }
+    
+    .logo-placeholder {
+        position: fixed;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .image-section {
+        flex: 0 0 25vh;
+    }
+    
+    .form-section {
+        padding: 0.75rem;
+    }
+    
+    .form-container {
+        padding: 1rem;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+    
+    .logo {
+        margin-bottom: 1rem;
+    }
+    
+    .form-header {
+        margin-bottom: 1rem;
+    }
+    
+    .divider {
+        margin: 1rem 0;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+    .form-input {
+        padding: 0.5rem;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .btn {
+        font-size: 16px;
+        padding: 0.6rem;
+    }
+    
+    .form-container {
+        padding: 0.75rem;
+    }
+}
+
+/* Disable button animations and hover effects that cause movement */
+.btn:active {
+    transform: none;
+}
+
+.btn:focus {
+    box-shadow: none;
+}
+
+/* Ensure forms fit viewport height */
+@media (max-height: 600px) {
+    .form-container {
+        padding: 0.75rem;
+    }
+    
+    .logo {
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-header {
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+    
+    .divider {
+        margin: 0.75rem 0;
+    }
+}
+
+@media (max-height: 500px) {
+    .image-section {
+        display: none;
+    }
+    
+    .form-section {
+        flex: 1;
+    }
+    
+    .form-container {
+        padding: 0.5rem;
+    }
+    
+    .logo-text {
+        font-size: 1.25rem;
+    }
+    
+    .form-title {
+        font-size: 1.125rem;
+    }
+}
+
+/* Loading states without animations */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Focus states for accessibility */
+.form-input:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 1px;
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--warm-yellow);
+    outline-offset: 1px;
+}

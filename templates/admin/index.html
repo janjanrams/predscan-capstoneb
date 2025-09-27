@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Predscan{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* Admin-specific styling */
+.admin-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.admin-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    background: #f3f4f6;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-btn {
+    background: #053460;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-btn:hover {
+    background: #042a52;
+}
+
+.admin-btn.secondary {
+    background: #6b7280;
+}
+
+.admin-btn.secondary:hover {
+    background: #4b5563;
+}
+
+.admin-btn.danger {
+    background: #dc3545;
+}
+
+.admin-btn.danger:hover {
+    background: #c82333;
+}
+
+.sidebar .nav-item.admin-only {
+    border-top: 1px solid #e5e7eb;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.admin-badge {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    margin-left: auto;
+}
+
+.stat-percentage {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.admin-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem 0;
+    line-height: 1;
+}
+
+.admin-card .stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.recent-activity {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: between;
+    margin-bottom: 1rem;
+}
+
+.activity-list {
+    space-y: 0.75rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    background: #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-text {
+    font-size: 0.875rem;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        justify-content: stretch;
+    }
+    
+    .admin-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Side Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('admin.index') }}" class="logo">Predscan Admin</a>
+        </div>
+        
+        <div class="sidebar-content">
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">
+                        <span class="nav-icon">⚡</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="avatar">{{ user.full_name[:2].upper() }}</div>
+                <div class="user-details">
+                    <div class="user-name">{{ user.full_name }}</div>
+                    <div class="admin-badge">Admin</div>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <p>System overview and management tools for Predscan</p>
+            </div>
+            
+            <!-- Statistics Grid -->
+            <div class="admin-grid">
+                <!-- Total Users Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Users</h3>
+                        <div class="card-icon">👥</div>
+                    </div>
+                    <div class="stat-number">{{ stats.total_users if stats else '0' }}</div>
+                    <div class="stat-label">Registered users</div>
+                </div>
+                
+                <!-- Total Analyses Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Analyses</h3>
+                        <div class="card-icon">📊</div>
+                    </div>
+                    <div class="stat-number">{{ stats.total_analyses if stats else '0' }}</div>
+                    <div class="stat-label">Documents analyzed</div>
+                </div>
+                
+                
+                <!-- Recent Activity Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                        <div class="card-icon">📋</div>
+                    </div>
+                    <div class="stat-number">{{ stats.recent_activity_count if stats else '0' }}</div>
+                    <div class="stat-label">Actions in last 24h</div>
+                </div>
+            </div>
+            
+            <!-- Analysis Results Breakdown -->
+            <div class="admin-grid" style="margin-top: 2rem;">
+                <!-- Predatory Journals Detected Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Predatory Journals</h3>
+                        <div class="card-icon">⚠️</div>
+                    </div>
+                    <div class="stat-number" style="color: #dc3545;">{{ stats.predatory_count if stats else '0' }}</div>
+                    <div class="stat-label">Predatory journals detected (Result = 1)</div>
+                    <div class="stat-percentage" style="color: #dc3545; font-weight: 600; margin-top: 0.5rem;">
+                        {% if stats and stats.total_analyses > 0 %}
+                            {{ "%.1f"|format((stats.predatory_count / stats.total_analyses) * 100) }}%
+                        {% else %}
+                            0.0%
+                        {% endif %}
+                        of total analyses
+                    </div>
+                </div>
+                
+                <!-- Non-Predatory Journals Detected Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Legitimate Journals</h3>
+                        <div class="card-icon">✅</div>
+                    </div>
+                    <div class="stat-number" style="color: #059669;">{{ stats.non_predatory_count if stats else '0' }}</div>
+                    <div class="stat-label">Non-predatory journals detected (Result = 0)</div>
+                    <div class="stat-percentage" style="color: #059669; font-weight: 600; margin-top: 0.5rem;">
+                        {% if stats and stats.total_analyses > 0 %}
+                            {{ "%.1f"|format((stats.non_predatory_count / stats.total_analyses) * 100) }}%
+                        {% else %}
+                            0.0%
+                        {% endif %}
+                        of total analyses
+                    </div>
+                </div>
+                
+                <!-- Analysis Accuracy Card -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Model Performance</h3>
+                        <div class="card-icon">🎯</div>
+                    </div>
+                    <div class="stat-number" style="color: #0284c7;">{{ stats.average_confidence if stats else '0' }}%</div>
+                    <div class="stat-label">Average prediction confidence</div>
+                    <div class="stat-percentage" style="color: #0284c7; font-weight: 600; margin-top: 0.5rem;">
+                        {% if stats and stats.high_confidence_count %}
+                            {{ stats.high_confidence_count }} high confidence predictions
+                        {% else %}
+                            No data available
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// Admin Dashboard JavaScript Functions
+
+function exportUsers() {
+    window.location.href = "{{ url_for('admin.export_users') }}";
+}
+
+function exportAnalyses() {
+    window.location.href = "{{ url_for('admin.export_analyses') }}";
+}
+
+function checkSystemHealth() {
+    fetch('/admin/system/health', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showAdminMessage(`System Health: ${data.status}`, data.healthy ? 'success' : 'error');
+    })
+    .catch(error => {
+        showAdminMessage('Failed to check system health', 'error');
+    });
+}
+
+function refreshActivity() {
+    fetch('/admin/activity/recent', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateActivityList(data.activities);
+        showAdminMessage('Activity refreshed successfully', 'success');
+    })
+    .catch(error => {
+        showAdminMessage('Failed to refresh activity', 'error');
+    });
+}
+
+function updateActivityList(activities) {
+    const activityList = document.getElementById('activityList');
+    
+    if (activities.length === 0) {
+        activityList.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-icon">ℹ️</div>
+                <div class="activity-content">
+                    <div class="activity-text">No recent activity to display</div>
+                    <div class="activity-time">System monitoring active</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    activityList.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+            <div class="activity-icon">${activity.icon || '📝'}</div>
+            <div class="activity-content">
+                <div class="activity-text">${activity.description}</div>
+                <div class="activity-time">${activity.timestamp || 'Unknown time'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAdminMessage(text, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.admin-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create and show new message
+    const message = document.createElement('div');
+    message.className = `admin-message message ${type}`;
+    message.textContent = text;
+    
+    const contentWrapper = document.querySelector('.content-wrapper');
+    contentWrapper.insertBefore(message, contentWrapper.firstChild);
+    
+    // Auto-remove message after 5 seconds
+    setTimeout(() => {
+        if (message.parentNode) {
+            message.remove();
+        }
+    }, 5000);
+}
+
+// Auto-refresh activity every 30 seconds
+setInterval(refreshActivity, 30000);
+</script>
+{% endblock %}
