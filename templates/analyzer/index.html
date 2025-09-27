@@ -238,7 +238,7 @@
                                 <div class="result-text-column">
                                     {% if analysis_result.probability_predatory > analysis_result.probability_legitimate %}
                                         <h3 class="result-title error">Suspected Predatory</h3>
-                                        <p class="result-subtitle">Probability: {{ "%.1f"|format(analysis_result.probability_predatory) }}% predatory</p>
+                                        <p class="result-subtitle">Probability: {{ "%.1f"|format(analysis_result.probability_predatory) }}% suspected predatory</p>
                                     {% else %}
                                         <h3 class="result-title success">Non-Predatory</h3>
                                         <p class="result-subtitle">Probability: {{ "%.1f"|format(analysis_result.probability_legitimate) }}% legitimate</p>
@@ -266,7 +266,7 @@
                                     <!-- Predatory Probability Column -->
                                     <div class="probability-column" style="flex: 1; width: 100%;">
                                         <div class="probability-metric-value predatory">{{ "%.1f"|format(analysis_result.probability_predatory) }}%</div>
-                                        <div class="probability-metric-label">Predatory</div>
+                                        <div class="probability-metric-label">Suspected Predatory</div>
                                     </div>
                                 </div>
                             </div>
