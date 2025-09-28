@@ -78,15 +78,15 @@
                         <div class="features-content">
                             <div class="feature-item">
                                 <div class="feature-name">Review Speed</div>
-                                <div class="feature-description">Represents the duration between submission and acceptance dates, calculated in days. A key distinguishing feature: legitimate journals have a median review time of 90 days, reflecting thorough peer review, while predatory journals have a median of 42 days, indicating rushed or superficial review processes.</div>
+                                <div class="feature-description">Represents the duration between submission and acceptance dates, calculated in days. A key distinguishing feature: Non-Predatory journals have a median review time of 90 days, reflecting thorough peer review, while predatory journals have a median of 42 days, indicating rushed or superficial review processes.</div>
                             </div>
                             <div class="feature-item">
                                 <div class="feature-name">Grammar Suggestions</div>
-                                <div class="feature-description">Represents the total number of grammatical issues in the text, identified using the LanguageTool API. Note: Longer articles naturally contain more errors, so this metric is best interpreted alongside word count. Legitimate articles (median: 170 errors) typically have higher total counts than predatory ones (median: 115 errors) due to greater length.</div>
+                                <div class="feature-description">Represents the total number of grammatical issues in the text, identified using the LanguageTool API. Note: Longer articles naturally contain more errors, so this metric is best interpreted alongside word count. Non-Predatory articles (median: 170 errors) typically have higher total counts than predatory ones (median: 115 errors) due to greater length.</div>
                             </div>
                             <div class="feature-item">
                                 <div class="feature-name">Word Count</div>
-                                <div class="feature-description">Measures the total number of words in the document. Legitimate articles typically have more comprehensive content (median: 4,333 words) compared to predatory articles (median: 3,233 words), reflecting greater depth of analysis and methodological detail.</div>
+                                <div class="feature-description">Measures the total number of words in the document. Non-Predatory articles typically have more comprehensive content (median: 4,333 words) compared to predatory articles (median: 3,233 words), reflecting greater depth of analysis and methodological detail.</div>
                             </div>
                             <div class="feature-item">
                                 <div class="feature-name">Lexical Density</div>
@@ -94,11 +94,11 @@
                             </div>
                             <div class="feature-item">
                                 <div class="feature-name">Reference Count</div>
-                                <div class="feature-description">Measures the total number of cited references, indicating scholarly engagement and literature foundation. Legitimate articles typically cite more sources (median: 32 references) than predatory articles (median: 22 references), reflecting more thorough research and academic rigor.</div>
+                                <div class="feature-description">Measures the total number of cited references, indicating scholarly engagement and literature foundation. Non-Predatory articles typically cite more sources (median: 32 references) than predatory articles (median: 22 references), reflecting more thorough research and academic rigor.</div>
                             </div>
                             <div class="feature-item">
                                 <div class="feature-name">Gradient Boosting Model</div>
-                                <div class="feature-description">An ensemble machine learning algorithm that builds multiple decision trees sequentially, where each tree corrects the errors of the previous ones. It combines weak learners to create a strong predictor for distinguishing between legitimate and predatory journals.</div>
+                                <div class="feature-description">An ensemble machine learning algorithm that builds multiple decision trees sequentially, where each tree corrects the errors of the previous ones. It combines weak learners to create a strong predictor for distinguishing between Non-Predatory and Suspected Predatory journals.</div>
                             </div>
                         </div>
                     </div>
@@ -260,7 +260,7 @@
                                     <!-- Legitimate Probability Column -->
                                     <div class="probability-column" style="flex: 1; width: 100%;">
                                         <div class="probability-metric-value legitimate">{{ "%.1f"|format(analysis_result.probability_legitimate) }}%</div>
-                                        <div class="probability-metric-label">Legitimate</div>
+                                        <div class="probability-metric-label">Non-Predatory</div>
                                     </div>
                                     
                                     <!-- Predatory Probability Column -->
@@ -438,9 +438,9 @@
                                     {% if user_review_speed <= predatory_median %}
                                         is significantly faster than the legitimate journal median of {{ legitimate_median }} days, falling within the typical predatory journal range (median: {{ predatory_median }} days). This rapid turnaround may indicate insufficient peer review processes.
                                     {% elif user_review_speed <= legitimate_median %}
-                                        falls between predatory ({{ predatory_median }} days) and legitimate ({{ legitimate_median }} days) medians, suggesting a moderate review process that could indicate either efficient legitimate review or thorough predatory screening.
+                                        falls between predatory ({{ predatory_median }} days) and Non-Predatory ({{ legitimate_median }} days) medians, suggesting a moderate review process that could indicate either efficient legitimate review or thorough predatory screening.
                                     {% else %}
-                                        exceeds the legitimate journal median of {{ legitimate_median }} days, indicating a thorough peer review process typical of reputable academic publications.
+                                        exceeds the Non-Predatory journal median of {{ legitimate_median }} days, indicating a thorough peer review process typical of reputable academic publications.
                                     {% endif %}
                                     </p>
                                 {% else %}
@@ -457,9 +457,9 @@
                                     <p><strong>Your Article:</strong> {{ "%.0f"|format(user_word_count) }} words</p>
                                     <p><strong>Statistical Context:</strong> Your article contains {{ "%.0f"|format(user_word_count) }} words, which is 
                                     {% if user_word_count >= legitimate_median %}
-                                        above the legitimate journal median of {{ "%.0f"|format(legitimate_median) }} words, indicating comprehensive content typical of thorough academic research with detailed methodology and analysis.
+                                        above the Non-Predatory journal median of {{ "%.0f"|format(legitimate_median) }} words, indicating comprehensive content typical of thorough academic research with detailed methodology and analysis.
                                     {% elif user_word_count >= predatory_median %}
-                                        between the predatory ({{ "%.0f"|format(predatory_median) }} words) and legitimate ({{ "%.0f"|format(legitimate_median) }} words) medians, suggesting moderate content depth that requires evaluation alongside other quality indicators.
+                                        between the predatory ({{ "%.0f"|format(predatory_median) }} words) and Non-Predatory ({{ "%.0f"|format(legitimate_median) }} words) medians, suggesting moderate content depth that requires evaluation alongside other quality indicators.
                                     {% else %}
                                         below the predatory journal median of {{ "%.0f"|format(predatory_median) }} words, which may indicate insufficient depth of analysis or methodology typical of lower-quality publications.
                                     {% endif %}
@@ -478,9 +478,9 @@
                                     <p><strong>Your Article:</strong> {{ "%.1f"|format(user_lexical_density) }}%</p>
                                     <p><strong>Statistical Context:</strong> Your article's lexical density of {{ "%.1f"|format(user_lexical_density) }}% 
                                     {% if user_lexical_density >= legitimate_median %}
-                                        meets or exceeds the legitimate journal median of {{ "%.1f"|format(legitimate_median) }}%, indicating a high proportion of meaningful content words (nouns, verbs, adjectives, adverbs) typical of sophisticated academic writing.
+                                        meets or exceeds the Non-Predatory journal median of {{ "%.1f"|format(legitimate_median) }}%, indicating a high proportion of meaningful content words (nouns, verbs, adjectives, adverbs) typical of sophisticated academic writing.
                                     {% elif user_lexical_density >= predatory_median %}
-                                        falls between predatory ({{ "%.2f"|format(predatory_median) }}%) and legitimate ({{ "%.1f"|format(legitimate_median) }}%) medians, suggesting moderate vocabulary sophistication that requires consideration with other quality metrics.
+                                        falls between predatory ({{ "%.2f"|format(predatory_median) }}%) and Non-Predatory ({{ "%.1f"|format(legitimate_median) }}%) medians, suggesting moderate vocabulary sophistication that requires consideration with other quality metrics.
                                     {% else %}
                                         is below the predatory journal median of {{ "%.2f"|format(predatory_median) }}%, which may indicate less sophisticated vocabulary usage or higher proportion of function words relative to content words.
                                     {% endif %}
@@ -499,9 +499,9 @@
                                     <p><strong>Your Article:</strong> {{ "%.0f"|format(user_reference_count) }} references</p>
                                     <p><strong>Statistical Context:</strong> Your article cites {{ "%.0f"|format(user_reference_count) }} references, which 
                                     {% if user_reference_count >= legitimate_median %}
-                                        meets or exceeds the legitimate journal median of {{ legitimate_median }} references, demonstrating strong scholarly engagement with existing literature and thorough research foundation.
+                                        meets or exceeds the Non-Predatory journal median of {{ legitimate_median }} references, demonstrating strong scholarly engagement with existing literature and thorough research foundation.
                                     {% elif user_reference_count >= predatory_median %}
-                                        falls between predatory ({{ predatory_median }} references) and legitimate ({{ legitimate_median }} references) medians, indicating moderate literature engagement that should be evaluated alongside research scope and methodology.
+                                        falls between predatory ({{ predatory_median }} references) and Non-Predatory ({{ legitimate_median }} references) medians, indicating moderate literature engagement that should be evaluated alongside research scope and methodology.
                                     {% else %}
                                         is below the predatory journal median of {{ predatory_median }} references, which may suggest limited literature review or insufficient engagement with the existing scholarly discourse in the field.
                                     {% endif %}
@@ -524,9 +524,9 @@
                                     {% if user_grammar_errors <= predatory_median %}
                                         This is at or below the predatory journal median of {{ predatory_median }} errors. While fewer errors might seem positive, it could indicate shorter content length or potentially less rigorous editorial oversight in context of article length.
                                     {% elif user_grammar_errors <= legitimate_median %}
-                                        This falls between predatory ({{ predatory_median }} errors) and legitimate ({{ legitimate_median }} errors) medians. The grammar error count should be interpreted relative to article length and content complexity.
+                                        This falls between predatory ({{ predatory_median }} errors) and Non-Predatory ({{ legitimate_median }} errors) medians. The grammar error count should be interpreted relative to article length and content complexity.
                                     {% else %}
-                                        This exceeds the legitimate journal median of {{ legitimate_median }} errors. However, legitimate journals often have higher total error counts due to longer, more comprehensive articles. The error rate per 1000 words ({{ "%.1f"|format(error_rate) }}) provides better context for quality assessment.
+                                        This exceeds the Non-Predatory journal median of {{ legitimate_median }} errors. However, Non-Predatory journals often have higher total error counts due to longer, more comprehensive articles. The error rate per 1000 words ({{ "%.1f"|format(error_rate) }}) provides better context for quality assessment.
                                     {% endif %}
                                     </p>
                                     <p><strong>Important Note:</strong> Grammar error counts correlate with article length. Longer articles naturally contain more errors in absolute terms, so the error rate per 1000 words is more meaningful for quality assessment than total count alone.</p>
@@ -551,7 +551,7 @@
                                 <!-- Explanatory Text -->
                                 <div style="margin-top: var(--spacing-4); padding: var(--spacing-3); background: var(--info-50); border-radius: var(--border-radius); border-left: 4px solid var(--info);">
                                     <h5 style="margin: 0 0 var(--spacing-2) 0; color: var(--info); font-weight: 600;">Understanding Feature Importance</h5>
-                                    <p style="margin: 0;">These importance scores represent the relative contribution of each feature to the model's predictive power. <strong>Review Speed</strong> emerges as the most critical indicator (30.4%), as predatory journals typically exhibit significantly faster publication timelines compared to legitimate journals with thorough peer review processes. <strong>Word Count</strong> (23.6%) and <strong>Lexical Density</strong> (17.5%) together reflect the depth and sophistication of academic content, while <strong>Reference Count</strong> (14.7%) indicates scholarly engagement with existing literature. <strong>Grammar Errors</strong> (13.8%), though contextual to article length, provide insights into editorial quality and oversight standards.</p>
+                                    <p style="margin: 0;">These importance scores represent the relative contribution of each feature to the model's predictive power. <strong>Review Speed</strong> emerges as the most critical indicator (30.4%), as predatory journals typically exhibit significantly faster publication timelines compared to Non-Predatory journals with thorough peer review processes. <strong>Word Count</strong> (23.6%) and <strong>Lexical Density</strong> (17.5%) together reflect the depth and sophistication of academic content, while <strong>Reference Count</strong> (14.7%) indicates scholarly engagement with existing literature. <strong>Grammar Errors</strong> (13.8%), though contextual to article length, provide insights into editorial quality and oversight standards.</p>
                                 </div>
                             </div>
                         </div>
@@ -577,7 +577,7 @@
                                         <strong>✅ Non-Predatory Publication Detected</strong>
                                     </div>
                                     <div class="analysis-description">
-                                        The article was classified as Non-Predatory by the model. This outcome means that, based on the combined influence of features such as review speed, word count, lexical density, reference count, and grammar errors, the article aligns closely with patterns typically observed in reputable and legitimate scholarly publications. The analysis indicates adherence to standard academic publishing practices and quality indicators. <strong>This article is recommended</strong> for use in academic and research purposes.
+                                        The article was classified as Non-Predatory by the model. This outcome means that, based on the combined influence of features such as review speed, word count, lexical density, reference count, and grammar errors, the article aligns closely with patterns typically observed in reputable and Non-Predatory scholarly publications. The analysis indicates adherence to standard academic publishing practices and quality indicators. <strong>This article is recommended</strong> for use in academic and research purposes.
                                     </div>
                                 {% endif %}
                                 
