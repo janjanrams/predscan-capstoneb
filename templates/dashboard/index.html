@@ -73,29 +73,30 @@
                                     <h3>{{ analysis.filename.rsplit('.', 1)[0] if '.' in analysis.filename else analysis.filename }}</h3>
                                     <p class="analysis-date">Analyzed {{ analysis.format_timestamp() }}</p>
                                     <span class="status-badge {% if analysis.get_risk_level() == 'high' %}status-predatory{% else %}status-safe{% endif %}">
+                                        
+                                        <div class="analysis-score">
+                                            {% if analysis.probability_predatory and analysis.probability_legitimate %}
+                                                {% if analysis.probability_predatory > analysis.probability_legitimate %}
+                                                    {{ "%.0f"|format(analysis.probability_predatory) }}%
+                                                {% else %}
+                                                    {{ "%.0f"|format(analysis.probability_legitimate) }}%
+                                                {% endif %}
+                                            {% elif analysis.result == 1 %}
+                                                {% if analysis.probability_predatory %}
+                                                    {{ "%.0f"|format(analysis.probability_predatory) }}%
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            {% else %}
+                                                {% if analysis.probability_legitimate %}
+                                                    {{ "%.0f"|format(analysis.probability_legitimate) }}%
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
                                         {{ analysis.get_result_status() }}
                                     </span>
-                                </div>
-                                <div class="analysis-score">
-                                    {% if analysis.probability_predatory and analysis.probability_legitimate %}
-                                        {% if analysis.probability_predatory > analysis.probability_legitimate %}
-                                            {{ "%.0f"|format(analysis.probability_predatory) }}%
-                                        {% else %}
-                                            {{ "%.0f"|format(analysis.probability_legitimate) }}%
-                                        {% endif %}
-                                    {% elif analysis.result == 1 %}
-                                        {% if analysis.probability_predatory %}
-                                            {{ "%.0f"|format(analysis.probability_predatory) }}%
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    {% else %}
-                                        {% if analysis.probability_legitimate %}
-                                            {{ "%.0f"|format(analysis.probability_legitimate) }}%
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}

@@ -578,7 +578,7 @@ body {
 }
 
 .analysis-score {
-    color: var(--gray-600);
+    color: var(--amber-600);
     font-size: var(--font-lg);
     font-weight: var(--font-weight-semibold);
 }
